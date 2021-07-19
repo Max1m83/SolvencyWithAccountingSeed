@@ -1,0 +1,48 @@
+<!-- status Email -->
+<template>
+    <lightning-card title="Status of Sent Emails" icon-name="standard:person_account">
+        <template if:true={isLoading}>
+            <div class="spinner">
+                <lightning-spinner alternative-text="Loading" variant="brand" size="large" class="spinner-position">
+                </lightning-spinner>
+            </div>
+        </template>
+        <div style="height: 300px; overflow-y: auto; overflow-x: hidden;">
+            <div class="slds-grid slds-gutters searchBlock">
+                <div class="slds-col slds-size_1-of-4">
+                    <div onkeyup={handleKeyUp}>
+                        <lightning-input
+                                name="enter-search"
+                                label="Search sent emails to Candidates"
+                                type="search"
+                        ></lightning-input>
+                    </div>
+                </div>
+                <div class="slds-col slds-size_1-of-4 sortingByStatus">
+                    <div class="slds-form-element" style="margin-top: 25px">
+                        <label class="slds-checkbox_toggle slds-grid" onchange={sortByStatus}>
+                            <span class="slds-form-element__label slds-m-bottom_none">Sorting by Email Status</span>
+                            <input type="checkbox" name="checkbox-toggle-16" value="checkbox-toggle-16"
+                                   aria-describedby="checkbox-toggle-16"/>
+                            <span id="checkbox-toggle-16" class="slds-checkbox_faux_container" aria-live="assertive">
+                              <span class="slds-checkbox_faux"></span>
+                              <span class="slds-checkbox_on">Error</span>
+                              <span class="slds-checkbox_off">All</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="slds-col slds-size_1-of-4 sortingByDate">
+                    <lightning-input type="date" name="input1" label="Sorting by Date" onchange={sortByDate}></lightning-input>
+                </div>
+            </div>
+            <lightning-datatable key-field="Id"
+                                 data={emailsLogs}
+                                 columns={columns}
+                                 hide-checkbox-column="true"
+                                 show-row-number-column="true"
+                                 onrowaction={callRowAction}>
+            </lightning-datatable>
+        </div>
+    </lightning-card>
+</template>

@@ -1,0 +1,15 @@
+<!--
+ - Created by max1m on 14.06.21.
+ -->
+
+<apex:page id="RecordTime" standardController="Opportunity" tabStyle="Opportunity">
+    <apex:pageBlock >
+        <apex:pageBlockSection >
+            <apex:outputField value="{!opportunity.Person__c}"/>
+            <apex:outputField value="{!opportunity.Date_of_work__c}"/>
+            <apex:outputField value="{!opportunity.Number_of_hours__c}"/>
+            <apex:outputField value="{!opportunity.Description__c}"/>
+            <apex:outputField value="{!opportunity.Billable__c}"/>
+        </apex:pageBlockSection>
+    </apex:pageBlock>
+</apex:page>

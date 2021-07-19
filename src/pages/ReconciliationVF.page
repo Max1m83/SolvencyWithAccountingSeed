@@ -1,0 +1,11 @@
+<!--
+ - Created by max1m on 04.05.21.
+ -->
+
+<apex:page id="ReconciliationVF" standardController="Invoice__c" recordSetVar="products" showHeader="false"
+           lightningStylesheets="true">
+
+    <apex:form id="muform">
+
+    </apex:form>
+</apex:page>

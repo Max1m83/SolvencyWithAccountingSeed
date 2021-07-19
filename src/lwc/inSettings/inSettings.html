@@ -1,0 +1,113 @@
+<!--
+ - Created by max1m on 05.03.21.
+ -->
+
+<!-- In Settings -->
+<template>
+    <lightning-card>
+        <lightning-tabset>
+            <lightning-tab label="Bexio" icon-name="standard:data_integration_hub">
+                <lightning-card title="Integration settings with Bexio." icon-name="standard:data_integration_hub">
+                    <template if:true={isLoading}>
+                        <div class="spinner">
+                            <lightning-spinner alternative-text="Loading" variant="brand" size="large"
+                                               class="spinner-position">
+                            </lightning-spinner>
+                        </div>
+                    </template>
+                    <div class="slds-grid slds-gutters">
+                        <div class="slds-col slds-size_1-of-4 slds-m-left_large">
+                            <lightning-input type="password" label="Access Token" onblur={checkValid} value={token} ></lightning-input>
+                            <template if:true={isChecked}>
+                                <template if:true={isValid}>
+                                    <div class="slds-p-top--small message-flex">
+                                        <lightning-icon icon-name="utility:check" size="x-small"
+                                                        variant="success"></lightning-icon>
+                                        <span class="slds-p-left--small slds-text-color_success">Key is valid!</span>
+                                    </div>
+                                </template>
+                                <template if:false={isValid}>
+                                    <div class="slds-p-top--small message-flex">
+                                        <lightning-icon icon-name="utility:close" size="x-small"
+                                                        variant="error"></lightning-icon>
+                                        <span class="slds-p-left--small slds-text-color_error">Key isn`t valid!</span>
+                                    </div>
+                                </template>
+                            </template>
+                            <div class="slds-form-element__label slds-p-top--medium">Last sync time</div>
+                            <div class="message-flex slds-p-bottom--medium button-before-scheduler">
+                                <div class="slds-form-element">
+                                    <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right slds-p-right--xx-small">
+                                        <span class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default"
+                                              aria-hidden="true">
+                                            <lightning-icon icon-name="utility:date_input"
+                                                            size="x-small"></lightning-icon>
+                                        </span>
+                                        <input data-id="inputDate" readonly type="text" id="text-input-id-2"
+                                               class="slds-input card-border"/>
+                                    </div>
+                                </div>
+                                <div class="slds-form-element">
+                                    <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right slds-p-left--xx-small">
+                                        <span class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default"
+                                              aria-hidden="true">
+                                            <lightning-icon icon-name="utility:clock" size="x-small"></lightning-icon>
+                                        </span>
+
+                                        <input data-id="inputTime" readonly type="text" id="text-input-id-3"
+                                               class="slds-input card-border"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <lightning-button variant="success" label="Synchronize now" title="Submit"
+                                              onclick={Synchronize}></lightning-button>
+
+                        </div>
+                        <div class="slds-col slds-size_1-of-4">
+                        </div>
+                        <div class="slds-col slds-size_1-of-4">
+                            <div class="slds-text-title_caps">Configure Scheduler settings.</div>
+                            <div class="slds-form-element__label slds-p-top--medium">Next sync time</div>
+                            <div class="message-flex slds-p-bottom--medium">
+                                <div class="slds-form-element">
+                                    <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right slds-p-right--xx-small">
+                                        <span class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default"
+                                              aria-hidden="true">
+                                            <lightning-icon icon-name="utility:date_input"
+                                                            size="x-small"></lightning-icon>
+                                        </span>
+                                        <input data-id="inputNextDate" readonly type="text" id="text-input-id-Next1"
+                                               class="slds-input card-border"/>
+                                    </div>
+                                </div>
+                                <div class="slds-form-element">
+                                    <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right slds-p-left--xx-small">
+                                        <span class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default"
+                                              aria-hidden="true">
+                                            <lightning-icon icon-name="utility:clock" size="x-small"></lightning-icon>
+                                        </span>
+
+                                        <input data-id="inputNextTime" readonly type="text" id="text-input-id-Next2"
+                                               class="slds-input card-border"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <lightning-combobox
+                                    class="slds-p-bottom--small"
+                                    name="progress"
+                                    label="Hourly frequency"
+                                    value={selectFrequency}
+                                    placeholder="Select Progress"
+                                    options={optionsHourly}
+                                    onchange={handleChange}></lightning-combobox>
+                            <lightning-button variant="brand" label="Update Scheduler" title="Submit"
+                                              onclick={Scheduler}></lightning-button>
+
+                        </div>
+                    </div>
+                </lightning-card>
+            </lightning-tab>
+        </lightning-tabset>
+    </lightning-card>
+</template>

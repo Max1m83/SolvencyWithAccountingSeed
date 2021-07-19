@@ -1,0 +1,19 @@
+<!--
+ - Created by max1m on 22.06.21.
+ -->
+
+<aura:component description="previewInvoicePDF" implements="flexipage:availableForRecordHome,force:lightningQuickAction,force:hasRecordId,force:hasSObjectName,force:appHostable,lightning:isUrlAddressable" controller="PDFClass" access="global">
+    <aura:attribute name="recordId" type="String" access="global" />
+    <aura:attribute name="showSpinner" type="Boolean"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+
+    <aura:if isTrue="{!v.showSpinner}">
+        <div class="slds-spinner_container slds-show spinnerposition" aura:id="imgSpinner">
+            <div class="slds-spinner--brand slds-spinner slds-spinner--medium spinneralert" role="alert">
+                <span class="slds-assistive-text">Waiting...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+</aura:component>

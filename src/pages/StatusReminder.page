@@ -1,0 +1,13 @@
+<!--
+ - Created by max1m on 31.05.21.
+ -->
+
+<apex:page id="StatusReminder"
+           standardController="Reminder_email__c"
+           extensions="SendReminder"
+           action="{!executeMethod}">
+    <script>
+        window.history.back();
+    </script>
+
+</apex:page>

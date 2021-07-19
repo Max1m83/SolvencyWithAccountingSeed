@@ -1,0 +1,46 @@
+<!--
+ - Created by max1m on 18.01.21.
+ -->
+
+<aura:component description="CloseOpportunity"
+                implements="force:lightningQuickActionWithoutHeader,force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,clients:availableForMailAppAppPage,clients:hasItemContext,lightning:actionOverride"
+                controller="CloseOpportunityController">
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="showSpinner" type="Boolean"/>
+    <aura:attribute name="selectedValue" type="String"/>
+    <aura:attribute name="allReason" type="List"/>
+
+    <aura:if isTrue="{!v.showSpinner}">
+        <div class="slds-spinner_container slds-show spinnerposition" aura:id="imgSpinner">
+            <div class="slds-spinner--brand slds-spinner slds-spinner--medium spinneralert" role="alert">
+                <span class="slds-assistive-text">Waiting...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+
+    <div class="slds-modal__content slds-grid slds-wrap " style="margin-bottom: 60px">
+        <lightning:recordEditForm objectApiName="Opportunity"
+                                  class="slds-size--1-of-1 slds-p-horizontal_x-small">
+            <div class="slds-modal__header">
+                <h2 class="slds-text-heading--medium">Mark Stage as Lost Opportunity</h2>
+            </div>
+
+            <lightning:select name="select" label="Loss Reason:" aura:id="select"
+                              value="{!v.selectedValue}">
+                <aura:iteration items="{!v.allReason}" var="option">
+                    <option text="{!option.label}" value="{!option.id}"
+                            selected="{!option.selected}"/>
+                </aura:iteration>
+            </lightning:select>
+
+        </lightning:recordEditForm>
+    </div>
+    <div class="slds-modal__footer">
+        <lightning:button variant="brand" label="Change" title="Brand action" onclick="{! c.save }"/>
+        <lightning:button variant="brand-outline" label="Cancel" title="Brand action" onclick="{! c.cancel }"/>
+    </div>
+
+</aura:component>

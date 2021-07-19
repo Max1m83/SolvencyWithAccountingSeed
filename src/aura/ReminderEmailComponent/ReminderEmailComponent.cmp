@@ -1,0 +1,84 @@
+<aura:component description="ReminderEmail"
+                implements="lightning:isUrlAddressable,force:lightningQuickActionWithoutHeader,force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,clients:availableForMailAppAppPage,clients:hasItemContext,lightning:actionOverride"
+                access="global"
+                controller="ReminderComponentController">
+    <lightning:empApi aura:id="empApi"/>
+    <aura:attribute name="subscription" type="Map"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <lightning:input aura:id="channel" label="channel" name="channel" type="text"
+                     value="/event/Event_Reminder_emails__e"/>
+    <!--    <lightning:button label="Subscribe" onclick="{! c.subscribe }" />-->
+    <!--    <lightning:button label="Unsubscribe" onclick="{! c.unsubscribe }" disabled="{!empty(v.subscription)}"/>-->
+    <lightning:utilityBarAPI aura:id="utilitybar"/>
+
+    <aura:attribute name="oldStatusJob" type="String"/>
+    <aura:attribute name="myVal" type="String"/>
+    <aura:attribute name="idReminder" type="String"/>
+    <aura:attribute name="Subject" type="String"/>
+    <aura:attribute name="Status" type="String"/>
+    <aura:attribute name="Icon" type="String"/>
+    <aura:attribute name="AttachmentList" type="List"/>
+    <aura:attribute name="Name" type="String"/>
+    <aura:attribute name="AddressTO" type="String"/>
+    <aura:attribute name="AddressCC" type="String"/>
+    <aura:attribute name="AddressFrom" type="String"/>
+    <aura:attribute name="showSpinner" type="Boolean"/>
+    <aura:attribute name="showAttachment" type="Boolean"/>
+    <aura:attribute name="scheduler" type="Boolean"/>
+    <aura:attribute name="showEvent" type="Boolean"/>
+    <aura:attribute name="Attachment" type="String"/>
+
+    <aura:if isTrue="{!v.showSpinner}">
+        <div class="slds-spinner_container slds-show spinnerposition" aura:id="imgSpinner">
+            <div class="slds-spinner--brand slds-spinner slds-spinner--medium spinneralert" role="alert">
+                <span class="slds-assistive-text">Waiting...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    <aura:if isTrue="{!v.showEvent}">
+        <div class="slds-modal__container header">
+            <div class="slds-modal__header">
+                <h2 class="slds-text-heading--medium">Company: {!v.Name}.</h2>
+                <h2 class="slds-text-heading--medium">Stage - {!v.oldStatusJob}</h2>
+            </div>
+            <div class="slds-modal__content slds-grid slds-wrap">
+                <div class="slds-size--1-of-1 slds-p-horizontal_x-small" style="display: flex; flex-wrap: wrap">
+                    <span><label class="slds-form-element__label">TO : &nbsp; </label>{!v.AddressTO}</span>
+                </div>
+                <div class="slds-size--1-of-1 slds-p-horizontal_x-small" style="display: flex; flex-wrap: wrap">
+                    <span><label class="slds-form-element__label">CC : &nbsp; </label>{!v.AddressCC}</span>
+                </div>
+                <div class="slds-size--1-of-1 slds-p-horizontal_x-small" style="display: flex; flex-wrap: wrap">
+                    <span><label class="slds-form-element__label">FROM: &nbsp; </label>{!v.AddressFrom}</span>
+                </div>
+
+                <lightning:input label="Subject" name="subject" value="{!v.Subject}"
+                                 class="slds-size--1-of-1 slds-p-horizontal_x-small"/>
+
+                <div class="slds-size--1-of-1 slds-p-horizontal_x-small" style="margin-bottom: 20px">
+                    <label class="slds-form-element__label">Body:</label>
+                    <lightning:inputRichText value="{!v.myVal}" label="Body"/>
+                </div>
+            </div>
+            <aura:if isTrue="{!v.showAttachment}">
+                <div class="slds-m-top_small">
+                    <aura:iteration items="{!v.AttachmentList}" var="item">
+                        <div class="slds-m-bottom_x-small">
+                            <lightning:icon iconName="{!item.Icon}" class="slds-m-right_x-small"
+                                            alternativeText="Image file" title="Image"/>
+                            <ui:outputURL value="{!item.UrlFile}" label="{!item.Name}" target="_ blank"/>
+                            <!--{!item}-->
+                        </div>
+                    </aura:iteration>
+                </div>
+            </aura:if>
+            <div class="slds-modal__footer">
+                <lightning:button variant="success" label="Send" title="Brand action"
+                                  onclick="{! c.send }"/>
+                <lightning:button variant="brand-outline" label="Cancel" title="Brand action" onclick="{! c.cancel }"/>
+            </div>
+        </div>
+    </aura:if>
+</aura:component>

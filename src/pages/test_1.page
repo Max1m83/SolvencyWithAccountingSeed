@@ -1,0 +1,16 @@
+<apex:page >
+     <apex:includeScript value="/lightning/lightning.out.js" />
+    <div id="theOpportunity"></div>
+    <script>
+        $Lightning.use("c:AppNewOppFormGlobal", function() {
+            $Lightning.createComponent(
+                "c:NOpp",
+                {},
+                "theOpportunity",
+                function(cmp) {
+                    console.log("Component created!");
+                    console.log(cmp);
+                });
+            });
+    </script>  
+</apex:page>

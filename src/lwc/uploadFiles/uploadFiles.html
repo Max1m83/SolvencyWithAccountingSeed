@@ -1,0 +1,64 @@
+<!--
+ - Created by max1m on 26.01.21.
+ -->
+
+<!-- Upload Files -->
+<template>
+    <div class="spinner">
+        <template if:true={isLoading}>
+            <lightning-spinner alternative-text="Loading" variant="brand" size="large" class="spinner-position">
+            </lightning-spinner>
+        </template>
+    </div>
+    <lightning-card title="Create Candidate" icon-name="standard:person_account">
+        <div class="slds-grid slds-gutters">
+            <div class="slds-col slds-border_right">
+                <h1 class="slds-text-heading_small; uploader ">Uploader Zip files</h1>
+                <div class="slds-m-around_medium">
+                    <lightning-file-upload
+                            label="Attach receipt"
+                            name="fileUploader"
+                            accept={acceptedFormats}
+                            record-id={recordId}
+                            onuploadfinished={handleUploadFinishedZIP}
+                            multiple></lightning-file-upload>
+                </div>
+                <template if:true={isFileName}>
+                    <div class="fileName">
+                        <p>{fileData}</p>
+                    </div>
+                </template>
+                <lightning-button variant="brand" label="Create" title="Submit" onclick={handleClick}
+                                  class="slds-m-left_x-small; createBottom"></lightning-button>
+            </div>
+            <div class="slds-col">
+                <h1 class="slds-text-heading_small; uploader">Uploader PDF files</h1>
+                <div class="slds-m-around_medium">
+                    <lightning-combobox
+                        class="slds-p-bottom--small"
+                        name="progress"
+                        label="Positions"
+                        value={selectPosition}
+                        placeholder="Select Position"
+                        options={valuePositions}
+                        onchange={handleChange}></lightning-combobox>
+                    <lightning-file-upload
+                            label="Attach receipt"
+                            name="fileUploader"
+                            accept={acceptedFormatsPDF}
+                            record-id={recordIdPDF}
+                            onuploadfinished={handleUploadFinishedPDF}
+                            multiple></lightning-file-upload>
+                </div>
+                <template if:true={isFilePDFName}>
+                    <div class="fileName">
+                        <p>{fileDataPDF}</p>
+                    </div>
+                </template>
+                <lightning-button variant="brand" label="Create" title="Submit" onclick={handleClickPDF}
+                                  class="slds-m-left_x-small; createBottom"></lightning-button>
+            </div>
+        </div>
+    </lightning-card>
+
+</template>

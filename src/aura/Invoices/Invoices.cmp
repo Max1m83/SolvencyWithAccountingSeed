@@ -1,0 +1,32 @@
+<!--
+ - Created by max1m on 17.08.20.
+ -->
+
+<aura:component  implements="force:lightningQuickActionWithoutHeader,force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,clients:availableForMailAppAppPage,clients:hasItemContext,lightning:actionOverride"
+                 access="global" controller="InvoiceController">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+
+    <aura:attribute name="ongoingBusiness" type="String"/>
+    <aura:attribute name="showSpinner" type="Boolean"/>
+
+    <aura:if isTrue="{!v.showSpinner}">
+        <div class="slds-spinner_container slds-show spinnerposition" aura:id="imgSpinner">
+            <div class="slds-spinner--brand slds-spinner slds-spinner--medium spinneralert" role="alert">
+                <span class="slds-assistive-text">Waiting...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+
+    <div class="slds-modal__content slds-grid slds-wrap ">
+        <lightning:recordEditForm objectApiName="Opportunity"
+                                  class="slds-size--1-of-1 slds-p-horizontal_x-small">
+
+            <lightning:messages/>
+            <p><lightning:formattedUrl label="Ongoing Business" value="{!v.ongoingBusiness}" tooltip="Omit leading slash" target="_blank" /></p>
+
+        </lightning:recordEditForm>
+    </div>
+
+</aura:component>

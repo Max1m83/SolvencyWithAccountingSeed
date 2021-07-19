@@ -1,0 +1,9 @@
+<!--
+ - Created by max1m on 01.09.20.
+ -->
+
+<apex:page id="SOLVENCY_ANALYTICS" standardController="AcctSeed__Billing__c" title="{!AcctSeed__Billing__c.Name & ' | Accounting Seed'}" extensions="AcctSeed.BillingPDFControllerExt" applyBodyTag="false" renderAs="pdf">
+    <head>
+       
+    </head>
+</apex:page>

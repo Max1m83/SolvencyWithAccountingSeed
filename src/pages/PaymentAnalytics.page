@@ -1,0 +1,15 @@
+<!--
+ - Created by max1m on 20.10.20.
+ -->
+
+<apex:page id="PaymentAnalytics" standardController="Opportunity" tabStyle="Opportunity">
+    <apex:pageBlock >
+        <apex:pageBlockSection >
+            <apex:outputField value="{!opportunity.Amounts_in_currency__c}"/>
+            <apex:outputField value="{!opportunity.Sum_invoice_year__c}"/>
+            <apex:outputField value="{!opportunity.Last12_months_invoiced__c}"/>
+            <apex:outputField value="{!opportunity.Ytd_invoiced_amount__c}"/>
+            <apex:outputField value="{!opportunity.Sum_amounts_quar__c}"/>
+        </apex:pageBlockSection>
+    </apex:pageBlock>
+</apex:page>

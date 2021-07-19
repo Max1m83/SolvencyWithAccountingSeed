@@ -1,0 +1,45 @@
+<!--
+ - Created by max1m on 25.11.20.
+ -->
+
+<aura:component description="RecurringBilling"
+                controller="RecurringBillingController"
+                implements="flexipage:availableForRecordHome,force:hasRecordId">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+
+    <aura:attribute name="RecurringBilling" type="Boolean"/>
+    <aura:attribute name="NextDate" type="Date"/>
+    <aura:attribute name="Repeat" type="Integer"/>
+    <aura:attribute name="showSpinner" type="Boolean"/>
+    <aura:attribute name="showButton" type="Boolean"/>
+
+    <!--Spinner-->
+    <aura:if isTrue="{!v.showSpinner}">
+        <div class="slds-spinner_container slds-show spinnerposition" aura:id="imgSpinner">
+            <div class="slds-spinner--brand slds-spinner slds-spinner--medium spinneralert" role="alert">
+                <span class="slds-assistive-text">Waiting...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    <div class="slds-modal__content slds-grid slds-wrap ">
+        <lightning:recordEditForm objectApiName="Opportunity"
+                                  class="slds-size--1-of-1 slds-p-horizontal_x-small">
+            <lightning:inputField fieldName="Recurring_billing_generation__c" value="{!v.RecurringBilling}" onchange="{!c.handleChange}"/>
+            <aura:if isTrue="{!v.RecurringBilling}">
+                <lightning:inputField fieldName="repeat_in_x_months__c" value="{!v.Repeat}"/>
+                <lightning:inputField fieldName="next_date__c" value="{!v.NextDate}"/>
+            </aura:if>
+
+        </lightning:recordEditForm>
+        <aura:if isTrue="{!v.showButton}">
+            <div class="slds-modal__footer">
+                <lightning:button variant="brand" label="Save" title="Brand action" onclick="{! c.save }"/>
+                <lightning:button variant="brand-outline" label="Cancel" title="Brand action" onclick="{! c.cancel }"/>
+            </div>
+        </aura:if>
+    </div>
+
+
+</aura:component>

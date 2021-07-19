@@ -1,0 +1,40 @@
+<!--
+ - Created by max1m on 04.01.21.
+ -->
+
+<apex:page id="BillingsCreate" standardController="AcctSeed__Billing__c" recordSetVar="products" showHeader="false"
+           lightningStylesheets="true">
+    <apex:form id="muform">
+        <apex:pageBlock title="Billing Edit" mode="edit" id="mub1">
+            <apex:pageBlockButtons location="bottom" id="mubut">
+                <apex:commandButton value="Save & Complete" action="{!save}" id="butsav"/>
+                <apex:commandButton value="Back" action="{!cancel}" id="butcan"/>
+            </apex:pageBlockButtons>
+            <apex:pageMessages />
+        </apex:pageBlock>
+        <apex:pageBlock title="Billing" >
+            <apex:pageBlockSection >
+                <div>
+                    <apex:outputText value="{!AcctSeed__Billing__c.Billing_Number_cal__c}"/>
+                </div>
+                <div>
+                    <apex:outputText value="{!AcctSeed__Billing__c.AcctSeed__Customer__c}"/>
+                </div>
+
+
+
+            </apex:pageBlockSection>
+
+            <!--<apex:pageBlockTable value="{!selected}" var="prod" id="mutab">-->
+                <!--<apex:column value="{!prod.Billing_Number_cal__c}" id="jName"/>-->
+            <!--</apex:pageBlockTable>-->
+        </apex:pageBlock>
+        <apex:pageBlock >
+            <apex:pageBlockButtons location="bottom" id="mubut">
+                <apex:commandButton value="Save" action="{!save}" id="butsav"/>
+                <apex:commandButton value="Cancel" action="{!cancel}" id="butcan"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+
+</apex:page>

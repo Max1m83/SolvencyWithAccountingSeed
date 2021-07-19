@@ -1,0 +1,9 @@
+/**
+ * Created by max1m on 14.05.21.
+ */
+.THIS {
+    width:100% !important;
+}
+.THIS .none-label label{
+    display: none !important;
+}

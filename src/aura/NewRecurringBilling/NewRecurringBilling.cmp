@@ -1,0 +1,72 @@
+<!--
+ - Created by max1m on 26.11.20.
+ -->
+
+<aura:component description="NewRecurringBilling"
+                implements="force:lightningQuickActionWithoutHeader,force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,lightning:actionOverride"
+                access="global" controller="RecurringBillingController">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="showSpinner" type="Boolean"/>
+    <aura:attribute name="createInvoice" type="Boolean"/>
+    <aura:attribute name="selectedAccount" type="String"/>
+    <aura:attribute name="selectFrequency" type="String"/>
+    <aura:attribute name="selectStatus" type="String"/>
+    <aura:attribute name="selectName" type="String"/>
+    <aura:attribute name="allAccount" type="List"/>
+    <aura:attribute name="defaultListOfEmailGroup" type="List"/>
+    <aura:attribute name="ListStatus" type="List"/>
+    <aura:attribute name="ListOfEmailGroup" type="Object[]"/>
+    <aura:attribute name="InvoiceDate" type="Date"/>
+
+    <!--Spinner-->
+    <aura:if isTrue="{!v.showSpinner}">
+        <div class="slds-spinner_container slds-show spinnerposition" aura:id="imgSpinner">
+            <div class="slds-spinner--brand slds-spinner slds-spinner--medium spinneralert" role="alert">
+                <span class="slds-assistive-text">Waiting...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+
+    <!--New Recurring Billing-->
+    <div class="slds-modal__content slds-grid slds-wrap ">
+        <lightning:recordEditForm objectApiName="AcctSeed__Recurring_Billing__c"
+                                  class="slds-size--1-of-1 slds-p-horizontal_x-small">
+            <div class="slds-modal__header">
+                <h2 class="slds-text-heading--medium">New Recurring Billing</h2>
+            </div>
+            <lightning:messages/>
+            <lightning:inputField fieldName="Name" value="{!v.selectName}"/>
+
+            <lightning:select name="select" label="Select the Account:" aura:id="select"
+                              value="{!v.selectedAccount}">
+                <aura:iteration items="{!v.allAccount}" var="option">
+                    <option text="{!option.label}" value="{!option.id}"
+                            selected="{!option.selected}"/>
+                </aura:iteration>
+            </lightning:select>
+            <lightning:inputField fieldName="AcctSeed__Status__c" value="{!v.selectStatus}"/>
+            <lightning:inputField fieldName="AcctSeed__Billing_Frequency__c" value="{!v.selectFrequency}"/>
+            <lightning:inputField fieldName="AcctSeed__Next_Billing_Date__c" value="{!v.InvoiceDate}"/>
+            <lightning:input name="batchIsEnabled" class="slds-align_absolute-right" aura:id="batchIsEnabled"
+                             label="Create Initial Billing?"
+                             type="checkbox"
+                             messageToggleActive="On"
+                             messageToggleInactive="Off"
+                             checked="{!v.createInvoice}"
+            />
+            <div class="slds-size--1-of-1 slds-p-horizontal_x-smal">
+                <lightning:dualListbox aura:id="selectOptions" name="Select Email Group" label="Select Email Group"
+                                       sourceLabel="Available Groups"
+                                       selectedLabel="Selected Groups"
+                                       options="{!v.ListOfEmailGroup}"
+                                       value="{!v.defaultListOfEmailGroup}"
+                />
+            </div>
+        </lightning:recordEditForm>
+    </div>
+    <div class="slds-modal__footer">
+        <lightning:button variant="brand" label="Create" title="Brand action" onclick="{! c.save }"/>
+    </div>
+</aura:component>

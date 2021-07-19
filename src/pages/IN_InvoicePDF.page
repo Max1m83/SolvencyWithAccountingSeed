@@ -1,0 +1,1156 @@
+<!--
+ - Created by max1m on 02.09.20.
+ -->
+
+<apex:page id="Invoice_PDF-file"
+           title="{!Invoice__c.Invoice__c & ' | Solvency Analytics'}"
+           standardController="Invoice__c"
+           extensions="InvoiceProductExtension"
+           renderAs="pdf"
+           showHeader="false"
+           sidebar="false"
+           standardStylesheets="false"
+           applyBodyTag="false"
+           applyHtmlTag="false">
+
+    <head>
+        <style type="text/css" media="print">
+
+            /*
+               To update the color scheme look for comments
+               below that start with the word "COLOR:"
+           */
+            @page :first {
+
+                size: letter;
+                margin-left: 25mm;
+                margin-right: 21mm;
+
+                @top-right {
+                    content: element(header);
+                }
+                @bottom-left {
+                    content: element(footer);
+                }
+                margin-top: 50px;
+            }
+
+            @page {
+
+                size: letter;
+                margin-left: 25mm;
+                @top-right {
+                    content: element(header);
+                }
+                @bottom-left {
+                    content: element(footer);
+                }
+                margin-top: 200px;
+            }
+
+            /* General Styles */
+            body {
+
+                font-family: Arial, Sans-Serif;
+                font-size: 9pt;
+                margin: 0px;
+            }
+
+            table {
+                font-family: Arial, Sans-Serif;
+                font-size: 9pt;
+            }
+
+            table th {
+                font-weight: bold;
+                height: 20px;
+                /*padding: 6px;*/
+                padding-top: 6px;
+                padding-bottom: 6px;
+
+                vertical-align: bottom;
+                /* COLOR: change column header font color for all tables */
+                color: #002b66;
+                /* COLOR: change color of line at top of all talbe headers */
+                border-bottom: 1px solid #000;
+                /*text-transform: uppercase;*/
+            }
+
+            table.jewel {
+
+            }
+
+            table_Description {
+                width: 30%;
+                margin-left: 0px;
+            }
+
+            .amount-due td {
+                /* COLOR: change amount due background color */
+                background-color: #002b66;
+                /* COLOR: change amount due font color */
+                color: white;
+                font-weight: bold;
+                padding: 6px;
+            }
+
+            .text-align--right {
+                text-align: right;
+            }
+
+            /* adds dividing line between table rows */
+            .divided-rows td {
+                /* COLOR: change color of divider bewteen table rows */
+                border-bottom: 1px solid #002b66;
+                padding: 6px;
+                vertical-align: text-top;
+            }
+
+            /* Content Container */
+            .content {
+                position: relative;
+                height: 100%;
+            }
+
+            /* page numbers */
+            div.footer {
+                display: block;
+                padding: 5px;
+                padding-left: 0;
+                position: running(footer);
+                font-size: 5pt;
+            }
+
+            div.header {
+                position: running(header);
+                margin-top: 20px;
+            }
+
+            .pagenumber:before {
+                content: counter(page);
+            }
+
+            .pagecount:before {
+                content: counter(pages);
+            }
+
+            /* footer content entered by user on pdf format setup page */
+            .footer-user-created {
+                page-break-inside: avoid;
+                font-size: 7pt;
+                /*text-align: center;*/
+            }
+
+            .footer-user-created table {
+                width: 100%;
+            }
+
+            .footer-user-created p {
+                margin: 5px 0 5px 0;
+            }
+
+            /* Header */
+            .header table {
+                width: 100%;
+            }
+
+            .header__address {
+                vertical-align: top;
+                text-align: left;
+            }
+
+            .header__logo,
+            .header__logo div {
+                vertical-align: top;
+                /*width: 340px;*/
+                width: 340px;
+                /*width: 70%;*/
+                /*width: 72%;*/
+            }
+
+            /* Billing Summary */
+            .summary {
+                width: 350px;
+                float: right;
+            }
+
+            .summary tr td + td {
+                text-align: right;
+            }
+
+            /* Billing Lines Table */
+            .billing-lines {
+                width: 100%;
+                -fs-table-paginate: paginate;
+                border-spacing: 0;
+
+            }
+
+            .billing-lines tbody td > div {
+                width: 100%;
+                overflow: hidden;
+            }
+
+            /* Below the Line Calculations */
+            .below-line-summary {
+                width: 200px;
+                border-collapse: collapse;
+                float: right;
+                margin: 5px 0 0 0;
+            }
+
+            .below-line-summary td {
+                padding-top: 6px;
+            }
+
+            .below-line-summary tr td + td {
+                text-align: right;
+            }
+
+            .below-line-summary__container {
+                width: 100%;
+                overflow: hidden;
+            }
+
+            .underscore--single {
+                border-bottom: 1px solid #000;
+            }
+
+            .underscore--double {
+                border-bottom: 2px double #000;
+            }
+
+            .negative {
+                color: #D00000;
+            }
+
+            .solvency {
+                margin-top: 2px
+            }
+
+            .imageClass {
+                display: block;
+                width: 100%
+            }
+
+            .boldStyle {
+                font-weight: bold;
+            }
+
+        </style>
+
+    </head>
+    <body>
+    <!-- SECTION: page numbers repaeating at the bottom of each page -->
+    <div class="header">
+        <table>
+            <tr>
+                <td class="header__logo">
+                    <div style="width:130px">
+                        <img src="{!$Resource.SolvencyLog}" class="imageClass"/>
+                    </div>
+                    <div class="solvency">
+                        <apex:outputText value="{!IF(ISBLANK(Invoice__c.PDF_Format_Invoice__r.Company_Name__c),$Organization.Name,Invoice__c.PDF_Format_Invoice__r.Company_Name__c)}"/>
+                    </div>
+                    <div class="solvency">
+                        <apex:outputField value="{!Invoice__c.PDF_Format_Invoice__r.Company_Street__c}"
+                                          rendered="{!!ISBLANK(Invoice__c.PDF_Format_Invoice__r.Company_Street__c)}"/>
+                        <apex:outputText value="{!$Organization.Street}"
+                                         rendered="{!ISBLANK(Invoice__c.PDF_Format_Invoice__r.Company_Street__c)}"/>
+                    </div>
+                    <div class="solvency">
+                        <apex:outputText value="{!IF(ISBLANK(Invoice__c.PDF_Format_Invoice__r.Company_PostalCode__c),$Organization.PostalCode,Invoice__c.PDF_Format_Invoice__r.Company_PostalCode__c) & ' ' & IF(ISBLANK(Invoice__c.PDF_Format_Invoice__r.Company_City__c),$Organization.City, Invoice__c.PDF_Format_Invoice__r.Company_City__c) & IF(ISBLANK(Invoice__c.PDF_Format_Invoice__r.Company_City__c) && ISBLANK($Organization.City),'',' ')}"/>
+                    </div>
+                    <div class="solvency">
+                        <apex:outputText value="{!IF(ISBLANK(Invoice__c.PDF_Format_Invoice__r.Company_State__c),$Organization.State,Invoice__c.PDF_Format_Invoice__r.Company_State__c)}"/>
+                    </div>
+                    <div class="solvency">
+                        &nbsp;
+                    </div>
+                    <div class="solvency">
+                        <apex:outputText value="{!IF(ISBLANK(Invoice__c.PDF_Format_Invoice__r.Company_Country__c),$Organization.Country,Invoice__c.PDF_Format_Invoice__r.Company_Country__c)}"
+                                rendered="{!!ISBLANK(Invoice__c.PDF_Format_Invoice__r.Company_Country__c) || !!ISBLANK($Organization.Country)}"/>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="footer" style="width: 100%">
+        <apex:outputPanel layout="block"
+                          style="width:100%; display: {!IF(Invoice__c.CurrencyIsoCode == 'CHF', '','none')}"
+                          rendered="{!!ISBLANK(Invoice__c.PDF_Format_Invoice__r.Footer__c)}">
+            <div class="footer-user-created" style="width: 100%; display: flex; justify-content: space-between;">
+                <span class="boldStyle">Bank:</span>&nbsp;UBS Switzerland AG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span class="boldStyle">Account owner:</span>&nbsp;SolvencyAnalytics AG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span class="boldStyle">BIC:</span>&nbsp;UBSWCHZH80A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span class="boldStyle">IBAN:</span>&nbsp;CH73 0020 6206 5301 2601 N
+            </div>
+        </apex:outputPanel>
+        <apex:outputPanel layout="block"
+                          style="width:100%; display: {!IF(Invoice__c.CurrencyIsoCode == 'GBP', '','none')}"
+                          rendered="{!!ISBLANK(Invoice__c.PDF_Format_Invoice__r.Footer__c)}">
+            <div class="footer-user-created" style="width: 100%; display: flex; justify-content: space-between;">
+                <span class="boldStyle">Bank:</span>&nbsp;UBS Switzerland AG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span class="boldStyle">Account owner:</span>&nbsp;SolvencyAnalytics AG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span class="boldStyle">BIC:</span>&nbsp;UBSWCHZH80A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span class="boldStyle">IBAN:</span>&nbsp;CH85 0020 6206 5301 2661 F
+            </div>
+        </apex:outputPanel>
+        <apex:outputPanel layout="block"
+                          style="width:100%; display: {!IF(Invoice__c.CurrencyIsoCode == 'EUR', '','none')}"
+                          rendered="{!!ISBLANK(Invoice__c.PDF_Format_Invoice__r.Footer__c)}">
+            <div class="footer-user-created" style="width: 100%; display: flex; justify-content: space-between;">
+                <span class="boldStyle">Bank:</span>&nbsp;UBS Switzerland AG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span class="boldStyle">Account owner:</span>&nbsp;SolvencyAnalytics AG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span class="boldStyle">BIC:</span>&nbsp;UBSWCHZH80A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span class="boldStyle">IBAN:</span>&nbsp;CH26 0020 6206 5301 2660 D
+            </div>
+        </apex:outputPanel>
+        <apex:outputPanel layout="block"
+                          style="width:100%; display: {!IF(Invoice__c.CurrencyIsoCode == 'USD', '','none')}"
+                          rendered="{!!ISBLANK(Invoice__c.PDF_Format_Invoice__r.Footer__c)}">
+            <div class="footer-user-created" style="width: 100%; display: flex; justify-content: space-between;">
+                <span class="boldStyle">Bank:</span>&nbsp;UBS Switzerland AG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span class="boldStyle">Account owner:</span>&nbsp;SolvencyAnalytics AG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span class="boldStyle">BIC:</span>&nbsp;UBSWCHZH80A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span class="boldStyle">IBAN:</span>&nbsp;CH62 0020 6206 5301 2663 Z
+            </div>
+        </apex:outputPanel>
+    </div>
+    <div class="content" style="margin-top: 150px">
+        <!-- SECTION: header w/ company address and logo -->
+        <div>
+            <table>
+                <tr>
+                    <td class="header__logo">
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        <table>
+                            <tr>
+                                <td>
+                                    <div class="solvency"
+                                         style="margin-top: -2px; padding-top: -2px;margin-bottom: 0px;padding-bottom: 0px">
+                                        <apex:outputText value="{!Invoice__c.Account__r.Company_name__c}"/>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="solvency"
+                                         style="margin-top: -2px; padding-top: -2px;margin-bottom: 0px;padding-bottom: 0px">
+                                        <apex:outputText escape="false" value="{!streetValue}"/>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="solvency"
+                                         style="margin-top: -2px; padding-top: -2px;margin-bottom: 0px;padding-bottom: 0px">
+                                        <apex:outputText value="{!IF(ISBLANK(Invoice__c.Billing_PostalCode__c),'',Invoice__c.Billing_PostalCode__c)}"/>
+                                        <apex:outputText value="{!IF(ISBLANK(Invoice__c.Billing_PostalCode__c),'',' ')}"/>
+
+                                        <apex:outputText value="{!Invoice__c.Billing_City__c}"/>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="solvency"
+                                         style="margin-top: -2px; padding-top: -2px;margin-bottom: 0px;padding-bottom: 0px">
+                                        <apex:outputText value="{!Invoice__c.Billing_Country__c}"/>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="solvency"
+                                         style="margin-top: -2px; padding-top: -2px;margin-bottom: 0px;padding-bottom: 0px">
+                                        &nbsp;
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="solvency"
+                                         style="margin-top: -2px; padding-top: -2px;margin-bottom: 0px;padding-bottom: 0px">
+                                        <apex:outputText value="{!Invoice__c.PO_Number__c}"/>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="solvency"
+                                         style="margin-top: -2px; padding-top: -2px;margin-bottom: 0px;padding-bottom: 0px">
+                                        <apex:outputText value="{!Invoice__c.Billing_Comment__c}"/>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <apex:outputPanel rendered="{!ISBLANK(Invoice__c.Service_Period_from__c)}">
+            <table style="width:100%;margin-bottom:20px;">
+                <tr>
+                    <th style="padding-left:0; font-size: 14px">
+                        <apex:outputText value="invoice "/>
+                        <apex:outputText value="{!Invoice__c.Invoice__c}"/>
+                    </th>
+                </tr>
+                <tr>
+                    <th style="padding-left:0;font-size: 14px;">
+                        <apex:outputField value="{!Invoice__c.Invoice_Title__c} "
+                                          rendered="{!!ISBLANK(Invoice__c.Invoice_Title__c)}"/>
+                        <apex:outputText value=" ("/>
+                        <apex:outputField value="{!Invoice__c.Accounting_period_Invoice__r.Period__c}"
+                                          rendered="{!!ISBLANK(Invoice__c.Accounting_period_Invoice__r.Period__c)}"/>
+                        <apex:outputText value=")"/>
+                    </th>
+                </tr>
+                <tr style="color: black;">
+                    <th style="padding-left:0; color: black; font-weight: normal;">
+
+                        <apex:outputText value="date:" style="margin-right: 130px; color: black; font-weight: normal;"/>
+                        <apex:outputField value="{!Invoice__c.Billing_Date__c}"/>
+                        <apex:outputText value="payable by:"
+                                         style="margin-right: 130px; margin-left: 130px; color: black; font-weight: normal;"/>
+                        <apex:outputField value="{!Invoice__c.Date__c}"/>
+                    </th>
+                </tr>
+            </table>
+        </apex:outputPanel>
+        <apex:outputPanel rendered="{!!ISBLANK(Invoice__c.Service_Period_from__c)}">
+            <table style="width:100%;margin-bottom:20px;">
+                <tr>
+                    <th style="padding-left:0; font-size: 14px">
+                        <apex:outputText value="invoice "/>
+                        <apex:outputText value="{!Invoice__c.Invoice_Title__c}"/>
+                    </th>
+                </tr>
+                <tr>
+                    <th style="padding-left:0;font-size: 14px;">
+                        <apex:outputField value="{!Invoice__c.Invoice_Title__c} "
+                                          rendered="{!!ISBLANK(Invoice__c.Invoice_Title__c)}"/>
+                        <apex:outputText value=" ("/>
+                        <apex:outputField value="{!Invoice__c.Accounting_period_Invoice__r.Period__c}"
+                                          rendered="{!!ISBLANK(Invoice__c.Accounting_period_Invoice__r.Period__c)}"/>
+                        <apex:outputText value=")"/>
+                    </th>
+                </tr>
+                <tr style="color: black;">
+                    <th style="padding-left:0; color: black; font-weight: normal;">
+
+                        <apex:outputText value="date:" style="margin-right: 130px; color: black; font-weight: normal;"/>
+                        <apex:outputField value="{!Invoice__c.Billing_Date__c}"/>
+                        <apex:outputText value="payable by:"
+                                         style="margin-right: 130px; margin-left: 130px; color: black; font-weight: normal;"/>
+                        <apex:outputField value="{!Invoice__c.Date__c}"/>
+                    </th>
+                </tr>
+                <tr style="color: black;">
+                    <th style="padding-left:0; color: black; font-weight: normal;">
+                        <apex:outputText value="Service Period:"
+                                         style="margin-right: 75px; color: black; font-weight: normal;"/>
+                        <apex:outputText value="from" style="color: black; font-weight: normal;"/>&nbsp;&nbsp;
+                        <apex:outputField value="{!Invoice__c.Service_Period_from__c}"/>&nbsp;&nbsp;
+                        <apex:outputText value="to" style="color: black; font-weight: normal;"/>&nbsp;&nbsp;
+                        <apex:outputField value="{!Invoice__c.Service_Period_to__c}"/>
+
+                    </th>
+                </tr>
+            </table>
+        </apex:outputPanel>
+        <div style="margin-top: 30px">
+            <apex:outputText value="Dear Madams and Sirs,"/>
+        </div>
+        <div style="margin-top: 20px; margin-bottom: 30px">
+            <apex:outputText value="Please find below the costs for the provided services:"/>
+        </div>
+
+        <!-- SECTION: billing comments -->
+        <apex:outputPanel layout="block"
+                          rendered="{!!ISBLANK(Invoice__c.Billing_Comment__c)}">
+            <apex:outputText value="{!Invoice__c.Billing_Comment__c}"/>
+        </apex:outputPanel>
+
+        <!-- Section if VAT and Discount aren`t used (VAT-- DISC --)-->
+        <apex:outputPanel rendered="{!!Invoice__c.With_Tax__c &&
+                                       Invoice__c.Discount_Amount__c == 0}">
+            <table class="billing-lines divided-rows">
+                <colgroup span="2"></colgroup>
+                <thead>
+                <tr>
+                    <!--90px-->
+                    <th style="width:45%; margin-left: 0px;">
+                        <apex:outputText value="Description"/>
+                    </th>
+                    <th class="text-align--right" style="width:5%">
+                        <apex:outputText value="Quantity"/>
+                    </th>
+                    <th class="text-align--right" style="width:25%">
+                        <apex:outputText value="Individual price"/>
+                    </th>
+                    <th class="text-align--right" style="width:20%">
+                        <apex:outputText value="Price "/>
+                        <apex:outputText value="{!Invoice__c.CurrencyIsoCode}"/>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <apex:repeat value="{!billLines}" var="item">
+                    <tr>
+                        <td style="width:45%;margin-left:0; padding-left:0;margin-right:0">
+                            <div>
+                                <apex:outputField value="{!item.Product__r.Name}"/>
+                                <div style="margin-right: 0; padding-right: 0">
+                                    <apex:outputField value="{!item.Description__c}"/>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-align--right" style="width:5%">
+                            <div>
+                                <apex:outputText value="{0, number, ###,###,###,##0}">
+                                    <apex:param value="{!item.Quantity__c}"/>
+                                </apex:outputText>
+                            </div>
+                        </td>
+                        <td class="text-align--right" style="width:25%">
+                            <div>
+                                <apex:outputText value="{!item.Unit_Price__c}"/>
+                            </div>
+                        </td>
+                        <td class="text-align--right" style="width:20%; padding-right: 0">
+                            <div>
+                                <apex:outputText value="{!item.Sub_Total__c}"/>
+                            </div>
+                        </td>
+                    </tr>
+                </apex:repeat>
+                </tbody>
+            </table>
+            <table class="billing-lines divided-rows">
+                <colgroup span="2"></colgroup>
+                <thead>
+                <tr>
+                    <th style="width:90px; color: black; border-bottom: 3px double black">
+                        <apex:outputText value="invoice sum tax-exempt"/>
+                    </th>
+                    <th class="text-align--right" style="width:80px; border-bottom: 3px double black">
+                    <span style="font-weight:bold; text-align: right">
+                        <apex:outputText value="{!Invoice__c.Sub_Total__c}"/>
+                    </span>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </apex:outputPanel>
+
+        <!-- Section if VAT isn`t used, but Discount is used (VAT -- DISC ++)-->
+        <apex:outputPanel rendered="{!!Invoice__c.With_Tax__c &&
+                                       Invoice__c.Discount_Amount__c > 0}">
+            <table class="billing-lines divided-rows">
+                <colgroup span="2"></colgroup>
+                <thead>
+                <tr>
+                    <!--90px-->
+                    <th style="width:45%; margin-left: 0px;">
+                        <apex:outputText value="Description"/>
+                    </th>
+                    <th class="text-align--right" style="width:5%">
+                        <apex:outputText value="Quantity"/>
+                    </th>
+                    <th class="text-align--right" style="width:25%">
+                        <apex:outputText value="Individual price"/>
+                    </th>
+                    <th class="text-align--right" style="width:20%">
+                        <apex:outputText value="Price "/>
+                        <apex:outputText value="{!Invoice__c.CurrencyIsoCode}"/>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <apex:repeat value="{!billLines}" var="item">
+                    <tr>
+                        <td style="width:45%;margin-left:0; padding-left:0;margin-right:0">
+                            <div>
+                                <apex:outputField value="{!item.Product__r.Name}"/>
+                                <div style="margin-right: 0; padding-right: 0">
+                                    <apex:outputField value="{!item.Description__c}"/>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-align--right" style="width:5%">
+                            <div>
+                                <apex:outputText value="{0, number, ###,###,###,##0}">
+                                    <apex:param value="{!item.Quantity__c}"/>
+                                </apex:outputText>
+                            </div>
+                        </td>
+                        <td class="text-align--right" style="width:25%">
+                            <div>
+                                <apex:outputText value="{!item.Unit_Price__c}"/>
+                            </div>
+                        </td>
+                        <td class="text-align--right" style="width:20%; padding-right: 0">
+                            <div>
+                                <apex:outputText value="{!item.Sub_Total__c}"/>
+                            </div>
+                        </td>
+                    </tr>
+                </apex:repeat>
+                </tbody>
+            </table>
+
+            <table class="billing-lines divided-rows">
+                <colgroup span="2"></colgroup>
+                <thead>
+                <tr>
+                    <th style="width:90px;color: black; font-weight: normal;">
+                        <apex:outputText value="Discount "/>
+                        <apex:outputText value="{0, number, ###,###,###,##0.00}">
+                            <apex:param value="{!Invoice__c.Discount__c}"/>
+                        </apex:outputText>
+                        <apex:outputText value=" %"/>
+                    </th>
+                    <th class="text-align--right" style="width:80px; color: black; font-weight: normal;">
+                    <span style="text-align: right">
+                         <apex:outputText value="- "/>
+                         <apex:outputText value="{!Invoice__c.Discount_Amount__c}"/>
+                    </span>
+                    </th>
+                </tr>
+                <tr>
+                    <th style="width:90px; color: black; border-bottom: 3px double black">
+                        <apex:outputText value="Amount tax exempt "/>
+                        <apex:param value="{!Invoice__c.Discount__c}"/>
+                    </th>
+                    <th class="text-align--right" style="width:80px; border-bottom: 3px double black">
+                    <span style="font-weight:bold; text-align: right">
+                        <apex:outputText value="{!Invoice__c.Total__c}"/>
+                    </span>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </apex:outputPanel>
+
+        <!-- Section if VAT and Discount are used (VAT++ DISC ++)-->
+        <apex:outputPanel rendered="{!Invoice__c.With_Tax__c &&
+                                      Invoice__c.Discount_Amount__c > 0}">
+            <table class="billing-lines divided-rows">
+                <colgroup span="2"></colgroup>
+                <thead>
+                <tr>
+                    <!--90px-->
+                    <th style="width:45%; margin-left: 0px;">
+                        <apex:outputText value="Description"/>
+                    </th>
+                    <th class="text-align--right" style="width:5%">
+                        <apex:outputText value="Quantity"/>
+                    </th>
+                    <th class="text-align--right" style="width:25%">
+                        <apex:outputText value="Individual price"/>
+                    </th>
+                    <th class="text-align--right" style="width:20%">
+                        <apex:outputText value="Price "/>
+                        <apex:outputText value="{!Invoice__c.CurrencyIsoCode}"/>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <apex:repeat value="{!billLines}" var="item">
+                    <tr>
+                        <td style="width:45%;margin-left:0; padding-left:0;margin-right:0">
+                            <div>
+                                <apex:outputField value="{!item.Product__r.Name}"/>
+                                <div style="margin-right: 0; padding-right: 0">
+                                    <apex:outputField value="{!item.Description__c}"/>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-align--right" style="width:5%">
+                            <div>
+                                <apex:outputText value="{0, number, ###,###,###,##0}">
+                                    <apex:param value="{!item.Quantity__c}"/>
+                                </apex:outputText>
+                            </div>
+                        </td>
+                        <td class="text-align--right" style="width:25%">
+                            <div>
+                                <apex:outputText value="{!item.Unit_Price__c}"/>
+                            </div>
+                        </td>
+                        <td class="text-align--right" style="width:20%; padding-right: 0">
+                            <div>
+                                <apex:outputText value="{!item.Sub_Total__c}"/>
+                            </div>
+                        </td>
+                    </tr>
+                </apex:repeat>
+                </tbody>
+            </table>
+
+            <table class="billing-lines divided-rows">
+                <colgroup span="2"></colgroup>
+                <thead>
+                <tr>
+                    <th style="width:90px;color: black; font-weight: normal;">
+                        <apex:outputText value="Discount "/>
+                        <apex:outputText value="{0, number, ###,###,###,##0.00}">
+                            <apex:param value="{!Invoice__c.Discount__c}"/>
+                        </apex:outputText>
+                        <apex:outputText value=" %"/>
+                    </th>
+                    <th class="text-align--right" style="width:80px; color: black; font-weight: normal;">
+                    <span style="text-align: right">
+                         <apex:outputText value="- "/>
+                         <apex:outputText value="{!Invoice__c.Discount_Amount__c}"/>
+                    </span>
+                    </th>
+                </tr>
+                <tr>
+                    <th style="width:90px; ">
+                        <apex:outputText value="Plus tax 7.70%" style="color: black; font-weight: normal;"/>
+                    </th>
+                    <th class="text-align--right" style="width:80px; color: black; font-weight: normal;">
+                    <span style="font-weight:normal; text-align: right; color: black;">
+                                <apex:outputText value="{0, number, ###,###,###,##0.00}">
+                                    <apex:param value="{!Invoice__c.VAT_7_70__c}"/>
+                                </apex:outputText>
+                    </span>
+                    </th>
+                </tr>
+                <tr>
+                    <th style="width:90px; color: black; border-bottom: 3px double black">
+                        <apex:outputText value="Amount incl. tax"/>
+                    </th>
+                    <th class="text-align--right" style="width:80px; border-bottom: 3px double black">
+                    <span style="font-weight:bold; text-align: right; color: black;">
+                         <apex:outputText value="{!Invoice__c.Total__c}"/>
+                    </span>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </apex:outputPanel>
+
+        <!-- Section if VAT is used but Discount isn`t used (VAT++ DISC --)-->
+        <apex:outputPanel rendered="{!Invoice__c.With_Tax__c &&
+                                      Invoice__c.Discount_Amount__c == 0}">
+            <table class="billing-lines divided-rows">
+                <colgroup span="2"></colgroup>
+                <thead>
+                <tr>
+                    <!--90px-->
+                    <th style="width:45%; margin-left: 0px;">
+                        <apex:outputText value="Description"/>
+                    </th>
+                    <th class="text-align--right" style="width:5%">
+                        <apex:outputText value="Quantity"/>
+                    </th>
+                    <th class="text-align--right" style="width:25%">
+                        <apex:outputText value="Individual price"/>
+                    </th>
+                    <th class="text-align--right" style="width:20%">
+                        <apex:outputText value="Price "/>
+                        <apex:outputText value="{!Invoice__c.CurrencyIsoCode}"/>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <apex:repeat value="{!billLines}" var="item">
+                    <tr>
+                        <td style="width:45%;margin-left:0; padding-left:0;margin-right:0">
+                            <div>
+                                <apex:outputField value="{!item.Product__r.Name}"/>
+                                <div style="margin-right: 0; padding-right: 0">
+                                    <apex:outputField value="{!item.Description__c}"/>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-align--right" style="width:5%">
+                            <div>
+                                <apex:outputText value="{0, number, ###,###,###,##0.00}">
+                                    <apex:param value="{!item.Quantity__c}"/>
+                                </apex:outputText>
+                            </div>
+                        </td>
+                        <td class="text-align--right" style="width:25%">
+                            <div>
+                                <apex:outputText value="{!item.Unit_Price__c}"/>
+                            </div>
+                        </td>
+                        <td class="text-align--right" style="width:20%; padding-right: 0">
+                            <div>
+                                <apex:outputText value="{!item.Sub_Total__c}"/>
+                            </div>
+                        </td>
+                    </tr>
+                </apex:repeat>
+                </tbody>
+            </table>
+
+            <table class="billing-lines divided-rows">
+                <colgroup span="2"></colgroup>
+                <thead>
+                <tr>
+                    <th style="width:90px; ">
+                        <apex:outputText value="Plus tax 7.70%" style="color: black; font-weight: normal;"/>
+                    </th>
+                    <th class="text-align--right" style="width:80px; color: black; font-weight: normal;">
+                    <span style="font-weight:normal; text-align: right; color: black;">
+                                <apex:outputText value="{0, number, ###,###,###,##0.00}">
+                                    <apex:param value="{!Invoice__c.VAT_7_70__c}"/>
+                                </apex:outputText>
+                    </span>
+                    </th>
+                </tr>
+                <tr>
+                    <th style="width:90px; color: black; border-bottom: 3px double black">
+                        <apex:outputText value="Amount incl. tax"/>
+                    </th>
+                    <th class="text-align--right" style="width:80px; border-bottom: 3px double black">
+                    <span style="font-weight:bold; text-align: right; color: black;">
+                         <apex:outputText value="{!Invoice__c.Total__c}"/>
+                    </span>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </apex:outputPanel>
+
+        <div style="margin-top: 35px;">
+            <apex:outputText value="Kind regards,"/>
+        </div>
+        <div style="margin-top: 10px;">
+            <apex:outputText value="SolvencyAnalytics AG"/>
+        </div>
+
+        <!--Description Annex-->
+        <apex:outputPanel rendered="{!Invoice__c.DescriptionAnnex__c}">
+            <div style="page-break-after:always;"></div>
+            <apex:outputText value="Annex" style="padding-bottom: 6px; font-size: 14pt; font-weight: bold;"/>
+            <div style="padding-bottom: 15px;"></div>
+
+            <!-- Section if VAT and Discount aren`t used (VAT-- DISC --)-->
+            <apex:outputPanel rendered="{!!Invoice__c.With_Tax__c &&
+                                       Invoice__c.Discount_Amount__c == 0}">
+                <table class="billing-lines divided-rows">
+                    <colgroup span="2"></colgroup>
+                    <thead>
+                    <tr>
+                        <th style="width:95%;">
+                            <apex:outputText value="Description"/>
+                        </th>
+                        <th class="text-align--right" style="width: 5%; border-bottom: 1px solid #000;">
+                            <apex:outputText value="Price "/>
+                            <apex:outputText value="{!Invoice__c.CurrencyIsoCode}"/>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <apex:repeat value="{!billLines}" var="item">
+                        <tr>
+                            <td style="width:90px; padding-left: 0;">
+                                <div style="padding-right: 0px; margin-right: 0px">
+                                    <apex:outputField value="{!item.Product__r.Name}"/>
+                                </div>
+                            </td>
+                            <td class="text-align--right"
+                                style="width:80px; padding-right: 0; border-bottom: 1px solid #000;">
+                                <div style="padding-left: 0px; margin-left: 0px">
+                                    <apex:outputText value="{!item.Sub_Total__c}"/>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr style="display: {!IF(ISBLANK(item.Description__c), 'none', '')}; width:118%; ">
+                            <td style="width:118%; padding-left: 0;">
+                                <div style="padding-right: 0px; margin-right: 0px; width: 118%">
+                                    <apex:outputField value="{!item.Description__c}"/>
+                                </div>
+                            </td>
+                            <td>
+                            </td>
+                        </tr>
+                    </apex:repeat>
+                    </tbody>
+                </table>
+
+                <table class="billing-lines divided-rows">
+                    <colgroup span="2"></colgroup>
+                    <thead>
+                    <tr>
+                        <th style="width:90px; color: black; border-bottom: 3px double black">
+                            <apex:outputText value="invoice sum tax-exempt"/>
+                        </th>
+                        <th class="text-align--right" style="width:80px; border-bottom: 3px double black">
+                    <span style="font-weight:bold; text-align: right">
+                        <apex:outputText value="{!Invoice__c.Total__c}"/>
+
+                    </span>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </apex:outputPanel>
+            <!-- Section if VAT isn`t used, but Discount is used (VAT -- DISC ++)-->
+            <apex:outputPanel rendered="{!!Invoice__c.With_Tax__c &&
+                                       Invoice__c.Discount_Amount__c > 0}">
+                <table class="billing-lines divided-rows">
+                    <colgroup span="2"></colgroup>
+                    <thead>
+                    <tr>
+                        <th style="width:95%;">
+                            <apex:outputText value="Description"/>
+                        </th>
+                        <th class="text-align--right" style="width: 5%; border-bottom: 1px solid #000;">
+                            <apex:outputText value="Price "/>
+                            <apex:outputText value="{!Invoice__c.CurrencyIsoCode}"/>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <apex:repeat value="{!billLines}" var="item">
+                        <tr>
+                            <td style="width:90px; padding-left: 0;">
+                                <div style="padding-right: 0px; margin-right: 0px">
+                                    <apex:outputField value="{!item.Product__r.Name}"/>
+                                </div>
+                            </td>
+                            <td class="text-align--right"
+                                style="width:80px; padding-right: 0; border-bottom: 1px solid #000;">
+                                <div style="padding-left: 0px; margin-left: 0px">
+                                    <apex:outputText value="{!item.Sub_Total__c}"/>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr style="display: {!IF(ISBLANK(item.Description__c), 'none', '')}">
+                            <td style="width:90px; padding-left: 0;">
+                                <div style="padding-right: 0px; margin-right: 0px">
+                                    <apex:outputField value="{!item.Description__c}"/>
+                                </div>
+                            </td>
+                            <td>
+                            </td>
+                        </tr>
+                    </apex:repeat>
+                    </tbody>
+                </table>
+
+                <table class="billing-lines divided-rows">
+                    <colgroup span="2"></colgroup>
+                    <thead>
+                    <tr>
+                        <th style="width:90px;color: black; font-weight: normal;">
+                            <apex:outputText value="Discount "/>
+                            <apex:outputText value="{0, number, ###,###,###,##0.00}">
+                                <apex:param value="{!Invoice__c.Discount__c}"/>
+                            </apex:outputText>
+                            <apex:outputText value=" %"/>
+                        </th>
+                        <th class="text-align--right" style="width:80px; color: black; font-weight: normal;">
+                    <span style="text-align: right">
+                        <apex:outputText value="- "/>
+                        <apex:outputText value="{!Invoice__c.Discount_Amount__c}"/>
+                    </span>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th style="width:90px; color: black; border-bottom: 3px double black">
+                            <apex:outputText value="Amount tax exempt "/>
+                            <apex:param value="{!Invoice__c.Discount__c}"/>
+                        </th>
+                        <th class="text-align--right" style="width:80px; border-bottom: 3px double black">
+                    <span style="font-weight:bold; text-align: right">
+                        <apex:outputText value="{!Invoice__c.Total__c}"/>
+                    </span>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </apex:outputPanel>
+
+            <!-- Section if VAT and Discount are used (VAT++ DISC ++)-->
+            <apex:outputPanel rendered="{!Invoice__c.With_Tax__c &&
+                                      Invoice__c.Discount_Amount__c > 0}">
+                <table class="billing-lines divided-rows">
+                    <colgroup span="2"></colgroup>
+                    <thead>
+                    <tr>
+                        <th style="width:95%;">
+                            <apex:outputText value="Description"/>
+                        </th>
+                        <th class="text-align--right" style="width: 5%; border-bottom: 1px solid #000;">
+                            <apex:outputText value="Price "/>
+                            <apex:outputText value="{!Invoice__c.CurrencyIsoCode}"/>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <apex:repeat value="{!billLines}" var="item">
+                        <tr>
+                            <td style="width:90px; padding-left: 0;">
+                                <div style="padding-right: 0px; margin-right: 0px">
+                                    <apex:outputField value="{!item.Product__r.Name}"/>
+                                </div>
+                            </td>
+                            <td class="text-align--right"
+                                style="width:80px; padding-right: 0; border-bottom: 1px solid #000;">
+                                <div style="padding-left: 0px; margin-left: 0px">
+                                    <apex:outputText value="{!item.Sub_Total__c}"/>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr style="display: {!IF(ISBLANK(item.Description__c), 'none', '')} ">
+                            <td style="width:90px; padding-left: 0;">
+                                <div style="padding-right: 0px; margin-right: 0px">
+                                    <apex:outputField value="{!item.Description__c}"/>
+                                </div>
+                            </td>
+                            <td>
+                            </td>
+                        </tr>
+                    </apex:repeat>
+                    </tbody>
+                </table>
+
+                <table class="billing-lines divided-rows">
+                    <colgroup span="2"></colgroup>
+                    <thead>
+                    <tr>
+                        <th style="width:90px;color: black; font-weight: normal;">
+                            <apex:outputText value="Discount "/>
+                            <apex:outputText value="{0, number, ###,###,###,##0.00}">
+                                <apex:param value="{!Invoice__c.Discount__c}"/>
+                            </apex:outputText>
+                            <apex:outputText value=" %"/>
+                        </th>
+                        <th class="text-align--right" style="width:80px; color: black; font-weight: normal;">
+                    <span style="text-align: right">
+                         <apex:outputText value="- "/>
+                        <apex:outputText value="{!Invoice__c.Discount_Amount__c}"/>
+                    </span>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th style="width:90px; ">
+                            <apex:outputText value="Plus tax 7.70%" style="color: black; font-weight: normal;"/>
+                        </th>
+                        <th class="text-align--right" style="width:80px; color: black; font-weight: normal;">
+                    <span style="font-weight:normal; text-align: right; color: black;">
+                                <apex:outputText value="{0, number, ###,###,###,##0.00}">
+                                    <apex:param value="{!Invoice__c.VAT_7_70__c}"/>
+                                </apex:outputText>
+                    </span>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th style="width:90px; color: black; border-bottom: 3px double black">
+                            <apex:outputText value="Amount incl. tax"/>
+                        </th>
+                        <th class="text-align--right" style="width:80px; border-bottom: 3px double black">
+                    <span style="font-weight:bold; text-align: right; color: black;">
+                        <apex:outputText value="{!Invoice__c.Total__c}"/>
+                    </span>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </apex:outputPanel>
+
+            <!-- Section if VAT is used but Discount isn`t used (VAT++ DISC --)-->
+            <apex:outputPanel rendered="{!Invoice__c.With_Tax__c &&
+                                      Invoice__c.Discount_Amount__c == 0}">
+                <table class="billing-lines divided-rows">
+                    <colgroup span="2"></colgroup>
+                    <thead>
+                    <tr>
+                        <th style="width:95%;">
+                            <apex:outputText value="Description"/>
+                        </th>
+                        <th class="text-align--right" style="width: 5%; border-bottom: 1px solid #000;">
+                            <apex:outputText value="Price "/>
+                            <apex:outputText value="{!Invoice__c.CurrencyIsoCode}"/>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <apex:repeat value="{!billLines}" var="item">
+                        <tr>
+                            <td style="width:90px; padding-left: 0;">
+                                <div style="padding-right: 0px; margin-right: 0px">
+                                    <apex:outputField value="{!item.Product__r.Name}"/>
+                                </div>
+                            </td>
+                            <td class="text-align--right"
+                                style="width:80px; padding-right: 0; border-bottom: 1px solid #000;">
+                                <div style="padding-left: 0px; margin-left: 0px">
+                                    <apex:outputText value="{!item.Sub_Total__c}"/>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr style="display: {!IF(ISBLANK(item.Description__c), 'none', '')} ">
+                            <td style="width:90px; padding-left: 0;">
+                                <div style="padding-right: 0px; margin-right: 0px">
+                                    <apex:outputField value="{!item.Description__c}"/>
+                                </div>
+                            </td>
+                            <td>
+                            </td>
+                        </tr>
+                    </apex:repeat>
+                    </tbody>
+                </table>
+
+                <table class="billing-lines divided-rows">
+                    <colgroup span="2"></colgroup>
+                    <thead>
+                    <tr>
+                        <th style="width:90px; ">
+                            <apex:outputText value="Plus tax 7.70%" style="color: black; font-weight: normal;"/>
+                        </th>
+                        <th class="text-align--right" style="width:80px; color: black; font-weight: normal;">
+                    <span style="font-weight:normal; text-align: right; color: black;">
+                                <apex:outputText value="{0, number, ###,###,###,##0.00}">
+                                    <apex:param value="{!Invoice__c.VAT_7_70__c}"/>
+                                </apex:outputText>
+                    </span>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th style="width:90px; color: black; border-bottom: 3px double black">
+                            <apex:outputText value="Amount incl. tax"/>
+                        </th>
+                        <th class="text-align--right" style="width:80px; border-bottom: 3px double black">
+                    <span style="font-weight:bold; text-align: right; color: black;">
+                        <apex:outputText value="{!Invoice__c.Total__c}"/>
+                    </span>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </apex:outputPanel>
+        </apex:outputPanel>
+    </div>
+    </body>
+</apex:page>

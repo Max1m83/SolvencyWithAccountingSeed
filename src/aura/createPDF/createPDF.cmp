@@ -1,0 +1,8 @@
+<!--
+ - Created by max1m on 16.04.21.
+ -->
+
+<aura:component description="createPDF"
+                implements="force:lightningQuickActionWithoutHeader,force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,clients:availableForMailAppAppPage,clients:hasItemContext,lightning:actionOverride"
+                controller="PDFClass">
+</aura:component>

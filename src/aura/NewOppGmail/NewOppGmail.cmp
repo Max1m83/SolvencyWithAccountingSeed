@@ -1,0 +1,123 @@
+<aura:component description="NewOppGmail"
+                implements="force:lightningQuickActionWithoutHeader,force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,clients:availableForMailAppAppPage,clients:hasItemContext,lightning:actionOverride"
+                access="global" controller="OpportunityController">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler name="change" value="{!v.people}" action="{!c.handlePeopleChange}"/>
+
+    <aura:attribute name="opportunity" type="Opportunity" default="{ 'sobjectType':'Opportunity' }" access="public"/>
+    <aura:attribute name="account" type="Account" default="{ 'sobjectType':'Account' }" access="public"/>
+    <aura:attribute name="opportunityNew" type="Opportunity" default="{ 'sobjectType':'Opportunity' }"/>
+    <aura:attribute name="Complexity" type="String[]" default="1,2,3,4,5"/>
+    <aura:attribute name="Quarter" type="String[]" default="Q1,Q2,Q3,Q4"/>
+    <aura:attribute name="Years" type="String[]" default="2020,2021,2022,2023,2024,2025"/>
+    <!--<aura:attribute name="Stage" type="String[]" default="In contact,Negotiation,Hand-shake agreement,Closed Won"/>-->
+    <aura:attribute name="Stage" type="String[]"/>
+    <aura:attribute name="Activity" type="String[]"/>
+    <aura:attribute name="TimelineQuarter" type="String[]" default="2020_Q1,2020_Q2,2020_Q3,2020_Q4,Done"/>
+    <!--<aura:attribute name="SourceValue" type="String[]" default="None,Upselling,New Business - client referral,-->
+    <!--New Business - Deka,New Business - internet,Fundinfoact"/>-->
+    <aura:attribute name="SourceValue" type="String[]"/>
+    <aura:attribute name="CloseDate" type="date"/>
+    <aura:attribute name="ListOfOption" type="Object[]" default="[{'label':'Regulatory Reporting','value':'Regulatory Reporting'},
+                                                                 {'label':'EMT/EPT','value':'EMT/EPT'},
+                                                                 {'label':'Consulting','value':'Consulting'},
+                                                                 {'label':'Other','value':'Other'}]"></aura:attribute>
+    <aura:attribute name="defaultOptions" type="List"/>
+    <aura:attribute name="showSpinner" type="Boolean"/>
+    <aura:attribute name="showAccount" type="Boolean"/>
+    <aura:attribute name="showOpportunity" type="Boolean"/>
+    <aura:attribute name="selectedComplexity" type="String"/>
+    <aura:attribute name="selectedAmount" type="Decimal" default='5000'/>
+    <aura:attribute name="selectedName" type="String"/>
+    <aura:attribute name="selectedNameAccount" type="String"/>
+    <aura:attribute name="selectedStage" type="String"/>
+    <aura:attribute name="selectedActivity" type="String"/>
+    <aura:attribute name="selectedTimelineQuarter" type="String"/>
+    <aura:attribute name="selectedSource" type="String"/>
+    <aura:attribute name="myAccId" type="String" default=""/>
+    <aura:attribute name="myPriceBookId" type="String"/>
+    <aura:attribute name="companyName" type="String"/>
+    <aura:attribute name="parentAccount" type="String"/>
+
+    <aura:attribute name="source" type="String"/>
+    <aura:attribute name="emailAddress" type="String"/>
+    <aura:attribute name="emailAddressAccount" type="String"/>
+    <aura:attribute name="mode" type="String"/>
+    <aura:attribute name="people" type="Object"/>
+    <aura:attribute name="subject" type="String"/>
+    <aura:attribute name="messageBody" type="String"/>
+
+    <!--Spinner-->
+    <aura:if isTrue="{!v.showSpinner}">
+        <div class="slds-spinner_container slds-show spinnerposition" aura:id="imgSpinner">
+            <div class="slds-spinner--brand slds-spinner slds-spinner--medium spinneralert" role="alert">
+                <span class="slds-assistive-text">Waiting...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    <!--Opportunity tab-->
+    <div>
+        <div class="slds-modal__content slds-grid slds-wrap">
+            <div class="slds-modal__header" style="width: 100%">
+                <h2 class="slds-text-heading--medium">New Opportunity</h2>
+            </div>
+            <lightning:input label="Opportunity Name" name="nameOpp" value="{!v.selectedName}" required="true"
+                             class="slds-size--1-of-1 slds-p-horizontal_x-small"/>
+            <lightning:recordEditForm objectApiName="Opportunity"
+                                      class="slds-size--1-of-1 slds-p-horizontal_x-small"
+                                      onsubmit="{!c.handleSubmit}">
+                <lightning:messages/>
+                <lightning:inputField fieldName="AccountId" value="{!v.myAccId}" required="true"
+                                      onchange="{!c.handleChange}"/>
+
+                <lightning:inputField fieldName="Pricebook2Id" value="{!v.myPriceBookId}"/>
+            </lightning:recordEditForm>
+            <div class="slds-size--1-of-1 slds-p-horizontal_x-small">
+                <lightning:select name="Complexity" label="Complexity" value="{!v.selectedComplexity}">
+                    <aura:iteration items="{!v.Complexity}" var="complexity">
+                        <option text="{!complexity}"></option>
+                    </aura:iteration>
+                </lightning:select>
+            </div>
+            <div class="slds-size--1-of-1 slds-p-horizontal_x-small">
+                <lightning:select name="Stage" label="Stage" value="{!v.selectedStage}" required="true">
+                    <aura:iteration items="{!v.Stage}" var="stage">
+                        <option text="{!stage}"></option>
+                    </aura:iteration>
+                </lightning:select>
+            </div>
+            <div class="slds-size--1-of-1 slds-p-horizontal_x-small">
+                <lightning:select name="Activity" label="Activity Status" value="{!v.selectedActivity}"
+                                  required="true">
+                    <aura:iteration items="{!v.Activity}" var="act">
+                        <option text="{!act}"></option>
+                    </aura:iteration>
+                </lightning:select>
+            </div>
+            <lightning:input label="Expected Amount (local)" name="amountOpp" value="{!v.selectedAmount}"
+                             class="slds-size--1-of-1 slds-p-horizontal_x-small"/>
+            <div class="slds-size--1-of-1 slds-p-horizontal_x-small">
+                <lightning:select name="SourceValue" label="SourceValue" value="{!v.selectedSource}">
+                    <aura:iteration items="{!v.SourceValue}" var="sourceValue">
+                        <option text="{!sourceValue}"></option>
+                    </aura:iteration>
+                </lightning:select>
+            </div>
+            <lightning:input type="date" name="CloseDate" label="Close Date" value="{!v.CloseDate}" required="true"
+                             class="slds-size--1-of-1 slds-p-horizontal_x-small"/>
+            <div class="slds-size--1-of-1 slds-p-horizontal_x-smal">
+                <lightning:dualListbox aura:id="selectOptions" name="Select Options" label="Select Options"
+                                       sourceLabel="Available Options"
+                                       selectedLabel="Selected Options"
+                                       options="{!v.ListOfOption}"
+                                       value="{!v.defaultOptions}"
+                />
+            </div>
+        </div>
+        <div class="slds-modal__footer">
+            <lightning:button variant="brand" label="Save" title="Brand action" onclick="{! c.save }"/>
+        </div>
+    </div>
+</aura:component>

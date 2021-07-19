@@ -1,0 +1,69 @@
+<aura:component description="ToastResultInvoice"
+                implements="force:lightningQuickActionWithoutHeader,force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,clients:availableForMailAppAppPage,clients:hasItemContext,lightning:actionOverride"
+                access="global"
+                controller="ToastResultInvoiceController">
+    <lightning:empApi aura:id="empApi"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <lightning:utilityBarAPI aura:id="utilitybar"/>
+    <aura:attribute name="showSpinner" type="Boolean"/>
+    <aura:attribute name="showEvent" type="Boolean"/>
+    <aura:attribute name="Status" type="String"/>
+    <aura:attribute name="data" type="Object"/>
+    <aura:attribute name="columns" type="List"/>
+    <lightning:input aura:id="channel" label="channel" name="channel" type="text" value="/event/InvoiceEvent__e"/>
+
+    <aura:if isTrue="{!v.showEvent}">
+
+        <div class="slds-p-around--medium header">
+            <div class="slds-p-around--medium header">
+                <h2 class="slds-text-heading--medium">Synchronization is complete.   Status - {!v.Status}</h2>
+            </div>
+            <div class="">
+                <h2 class="slds-text-heading--medium">List of invoices requiring manual correction.</h2>
+            </div>
+            <div class=" slds-grid slds-wrap" style="padding-bottom: 50px;">
+
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                    <thead>
+                    <tr class="slds-line-height_reset">
+                        <th class="slds-text-title_caps" style="width: 10%" scope="col">
+                            <div class="slds-truncate" title="Invoice">Invoice</div>
+                        </th>
+                        <th class="slds-text-title_caps" scope="col">
+                            <div class="slds-truncate" title="Opportunity">Opportunity</div>
+                        </th>
+                        <th class="slds-text-title_caps" scope="col">
+                            <div class="slds-truncate" title="Product">Product</div>
+                        </th>
+                        <th class="slds-text-title_caps" scope="col">
+                            <div class="slds-truncate" title="Synch">Synch</div>
+                        </th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <aura:iteration items="{!v.columns}" var="acc">
+                        <tr class="slds-hint-parent">
+                            <td data-label="Invoice">
+                                <div class="slds-truncate" title="Invoice">{!acc.Name}</div>
+                            </td>
+                            <td data-label="Opportunity">
+                                <div class="slds-truncate" style="{!acc.Opp == 'Missing items' ? 'color: red; font-size: 18px;': 'color: green; font-size: 18px;'}" title="Opportunity">{!acc.Opp}</div>
+                            </td>
+                            <td data-label="Product">
+                                <div class="slds-truncate" style="{!acc.Prod == 'Missing items' ? 'color: red; font-size: 18px;': 'color: green; font-size: 18px;'}" title="Product">{!acc.Prod}</div>
+                            </td>
+                            <td data-label="Synch">
+                                <div class="slds-truncate" style="{!acc.Synch == 'Missing items' ? 'color: red; font-size: 18px;': 'color: green; font-size: 18px;'}" title="Synch">{!acc.Synch}</div>
+                            </td>
+                        </tr>
+                    </aura:iteration>
+                    </tbody>
+                </table>
+            </div>
+            <div class="slds-modal__footer" style="position: absolute; bottom: 0; left: 0; right: 18px;">
+                <lightning:button variant="brand-outline" label="Hide" title="Brand action" onclick="{! c.closed }"/>
+            </div>
+        </div>
+    </aura:if>
+</aura:component>

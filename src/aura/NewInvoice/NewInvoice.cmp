@@ -1,0 +1,243 @@
+<!--
+ - Created by max1m on 17.07.20.
+ -->
+<aura:component description="NewInvoice"
+                implements="force:lightningQuickActionWithoutHeader,force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,lightning:actionOverride"
+                access="global" controller="InvoiceController">
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler name="change" value="{!v.people}" action="{!c.handlePeopleChange}"/>
+    <aura:attribute name="InvoiceDate" type="Date"/>
+    <aura:attribute name="myAccId" type="String"/>
+    <aura:attribute name="myOpp" type="String"/>
+    <aura:attribute name="myLedger" type="String"/>
+    <aura:attribute name="showSpinner" type="Boolean"/>
+    <aura:attribute name="showBeforeBilling" type="Boolean"/>
+    <aura:attribute name="showAfterBilling" type="Boolean"/>
+    <aura:attribute name="allAccount" type="List"/>
+    <aura:attribute name="ReportValue" type="List"/>
+    <aura:attribute name="PeriodValue" type="List"/>
+    <aura:attribute name="selectedValue" type="String"/>
+
+    <aura:attribute name="data" type="Object"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="errors" type="Object" default="[]"/>
+    <aura:attribute name="draftValues" type="Object" default="[]"/>
+    <aura:attribute name="ListOfEmailGroup" type="Object[]"/>
+    <aura:attribute name="ListOfProduct" type="Object[]"/>
+    <aura:attribute name="defaultOptions" type="List"/>
+    <aura:attribute name="selectProducts" type="List"/>
+    <aura:attribute name="productName" type="String"/>
+    <aura:attribute name="period" type="String"/>
+
+    <!--Spinner-->
+    <aura:if isTrue="{!v.showSpinner}">
+        <div class="slds-spinner_container slds-show spinnerposition" aura:id="imgSpinner">
+            <div class="slds-spinner--brand slds-spinner slds-spinner--medium spinneralert" role="alert">
+                <span class="slds-assistive-text">Waiting...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+
+    <aura:if isTrue="{!v.showBeforeBilling}">
+
+        <div class="slds-modal__content slds-grid slds-wrap ">
+            <lightning:recordEditForm objectApiName="Invoice__c"
+                                      class="slds-size--1-of-1 slds-p-horizontal_x-small">
+                <div class="slds-modal__header">
+                    <h2 class="slds-text-heading--medium">New Invoice</h2>
+                </div>
+                <lightning:messages/>
+                <div class="slds-grid slds-grid--align-end slds-p-top--medium">
+                    <lightning:button variant="brand" label="Create" title="Brand action" onclick="{! c.save }"/>
+                </div>
+
+                <lightning:select name="select" label="Select the Account:" aura:id="select"
+                                  value="{!v.selectedValue}">
+                    <aura:iteration items="{!v.allAccount}" var="option">
+                        <option text="{!option.label}" value="{!option.id}"
+                                selected="{!option.selected}"/>
+                    </aura:iteration>
+                </lightning:select>
+                <lightning:inputField fieldName="AcctSeed__Opportunity__c" value="{!v.myOpp}"/>
+                <lightning:select name="select" label="Select the Report:" aura:id="select"
+                                  value="{!v.productName}">
+                    <aura:iteration items="{!v.ReportValue}" var="report">
+                        <option text="{!report.label}" value="{!report.value}"
+                                selected="{!report.selected}"/>
+                    </aura:iteration>
+                </lightning:select>
+                <div class="slds-size--1-of-1 slds-p-horizontal_x-smal">
+                    <lightning:dualListbox aura:id="selectOptions" name="Select Products" label="Select Products"
+                                           sourceLabel="Available Products"
+                                           selectedLabel="Selected Products"
+                                           options="{!v.ListOfProduct}"
+                                           value="{!v.selectProducts}"
+                    />
+                    <div class="slds-grid slds-p-top--x-small">
+                        <div class="slds-size--10-of-12"></div>
+                        <div class="slds-size--2-of-12">
+                            <lightning:button variant="neutral" label="Sort" title="Brand action"
+                                              onclick="{! c.sorting }"/>
+                        </div>
+                    </div>
+                </div>
+                <lightning:select name="select" label="Select accounting period:" aura:id="select"
+                                  value="{!v.period}">
+                    <aura:iteration items="{!v.PeriodValue}" var="per">
+                        <option text="{!per.label}" value="{!per.value}"
+                                selected="{!per.selected}"/>
+                    </aura:iteration>
+                </lightning:select>
+                <!--<lightning:inputField fieldName="AcctSeed__Ledger__c" value="{!v.myLedger}"/>-->
+                <div class="slds-size--1-of-1 slds-p-horizontal_x-smal">
+                    <lightning:dualListbox aura:id="selectOptions" name="Select Email Group" label="Select Email Group"
+                                           sourceLabel="Available Groups"
+                                           selectedLabel="Selected Groups"
+                                           options="{!v.ListOfEmailGroup}"
+                                           value="{!v.defaultOptions}"
+                    />
+                </div>
+                <lightning:inputField fieldName="Date__c" value="{!v.InvoiceDate}"/>
+
+            </lightning:recordEditForm>
+        </div>
+        <div class="slds-modal__footer">
+            <lightning:button variant="brand" label="Create" title="Brand action" onclick="{! c.save }"/>
+        </div>
+    </aura:if>
+
+    <!--<aura:if isTrue="{!v.showAfterBilling}">-->
+
+        <!--<div class="slds-modal__content slds-grid slds-wrap ">-->
+            <!--<lightning:recordEditForm objectApiName="Invoice__c"-->
+                                      <!--class="slds-size&#45;&#45;1-of-1 slds-p-horizontal_x-small">-->
+                <!--<div class="slds-modal__header">-->
+                    <!--<h2 class="slds-text-heading&#45;&#45;medium">Billing Edit</h2>-->
+                <!--</div>-->
+                <!--<lightning:messages/>-->
+                <!--<div class="slds-grid slds-grid&#45;&#45;align-end slds-p-top&#45;&#45;medium">-->
+                    <!--<lightning:button variant="brand" label="Create" title="Brand action" onclick="{! c.save }"/>-->
+                <!--</div>-->
+
+                <!--<lightning:select name="select" label="Select the Account:" aura:id="select"-->
+                                  <!--value="{!v.selectedValue}">-->
+                    <!--<aura:iteration items="{!v.allAccount}" var="option">-->
+                        <!--<option text="{!option.label}" value="{!option.id}"-->
+                                <!--selected="{!option.selected}"/>-->
+                    <!--</aura:iteration>-->
+                <!--</lightning:select>-->
+                <!--<lightning:inputField fieldName="AcctSeed__Opportunity__c" value="{!v.myOpp}"/>-->
+                <!--<lightning:select name="select" label="Select the Report:" aura:id="select"-->
+                                  <!--value="{!v.productName}">-->
+                    <!--<aura:iteration items="{!v.ReportValue}" var="report">-->
+                        <!--<option text="{!report.label}" value="{!report.value}"-->
+                                <!--selected="{!report.selected}"/>-->
+                    <!--</aura:iteration>-->
+                <!--</lightning:select>-->
+                <!--<div class="slds-size&#45;&#45;1-of-1 slds-p-horizontal_x-smal">-->
+                    <!--<lightning:dualListbox aura:id="selectOptions" name="Select Products" label="Select Products"-->
+                                           <!--sourceLabel="Available Products"-->
+                                           <!--selectedLabel="Selected Products"-->
+                                           <!--options="{!v.ListOfProduct}"-->
+                                           <!--value="{!v.selectProducts}"-->
+                    <!--/>-->
+                    <!--<div class="slds-grid slds-p-top&#45;&#45;x-small">-->
+                        <!--<div class="slds-size&#45;&#45;10-of-12"></div>-->
+                        <!--<div class="slds-size&#45;&#45;2-of-12">-->
+                            <!--<lightning:button variant="neutral" label="Sort" title="Brand action"-->
+                                              <!--onclick="{! c.sorting }"/>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                <!--</div>-->
+                <!--<lightning:select name="select" label="Select accounting period:" aura:id="select"-->
+                                  <!--value="{!v.period}">-->
+                    <!--<aura:iteration items="{!v.PeriodValue}" var="per">-->
+                        <!--<option text="{!per.label}" value="{!per.value}"-->
+                                <!--selected="{!per.selected}"/>-->
+                    <!--</aura:iteration>-->
+                <!--</lightning:select>-->
+                <!--<lightning:inputField fieldName="AcctSeed__Ledger__c" value="{!v.myLedger}"/>-->
+                <!--<div class="slds-size&#45;&#45;1-of-1 slds-p-horizontal_x-smal">-->
+                    <!--<lightning:dualListbox aura:id="selectOptions" name="Select Email Group" label="Select Email Group"-->
+                                           <!--sourceLabel="Available Groups"-->
+                                           <!--selectedLabel="Selected Groups"-->
+                                           <!--options="{!v.ListOfEmailGroup}"-->
+                                           <!--value="{!v.defaultOptions}"-->
+                    <!--/>-->
+                <!--</div>-->
+                <!--<lightning:inputField fieldName="AcctSeed__Date__c" value="{!v.InvoiceDate}"/>-->
+
+            <!--</lightning:recordEditForm>-->
+        <!--</div>-->
+    <!--</aura:if>-->
+
+    <!--New Billing-->
+    <!--<div class="slds-modal__content slds-grid slds-wrap ">-->
+    <!--<lightning:recordEditForm objectApiName="AcctSeed__Billing__c"-->
+    <!--class="slds-size&#45;&#45;1-of-1 slds-p-horizontal_x-small">-->
+    <!--<div class="slds-modal__header">-->
+    <!--<h2 class="slds-text-heading&#45;&#45;medium">New Invoice</h2>-->
+    <!--</div>-->
+    <!--<lightning:messages/>-->
+    <!--<div class="slds-grid slds-grid&#45;&#45;align-end slds-p-top&#45;&#45;medium">-->
+    <!--<lightning:button variant="brand" label="Create" title="Brand action" onclick="{! c.save }"/>-->
+    <!--</div>-->
+
+    <!--<lightning:select name="select" label="Select the Account:" aura:id="select"-->
+    <!--value="{!v.selectedValue}">-->
+    <!--<aura:iteration items="{!v.allAccount}" var="option">-->
+    <!--<option text="{!option.label}" value="{!option.id}"-->
+    <!--selected="{!option.selected}"/>-->
+    <!--</aura:iteration>-->
+    <!--</lightning:select>-->
+    <!--<lightning:inputField fieldName="AcctSeed__Opportunity__c" value="{!v.myOpp}"/>-->
+    <!--<lightning:select name="select" label="Select the Report:" aura:id="select"-->
+    <!--value="{!v.productName}">-->
+    <!--<aura:iteration items="{!v.ReportValue}" var="report">-->
+    <!--<option text="{!report.label}" value="{!report.value}"-->
+    <!--selected="{!report.selected}"/>-->
+    <!--</aura:iteration>-->
+    <!--</lightning:select>-->
+    <!--<div class="slds-size&#45;&#45;1-of-1 slds-p-horizontal_x-smal">-->
+    <!--<lightning:dualListbox aura:id="selectOptions" name="Select Products" label="Select Products"-->
+    <!--sourceLabel="Available Products"-->
+    <!--selectedLabel="Selected Products"-->
+    <!--options="{!v.ListOfProduct}"-->
+    <!--value="{!v.selectProducts}"-->
+    <!--/>-->
+    <!--<div class="slds-grid slds-p-top&#45;&#45;x-small">-->
+    <!--<div class="slds-size&#45;&#45;10-of-12"></div>-->
+    <!--<div class="slds-size&#45;&#45;2-of-12">-->
+    <!--<lightning:button variant="neutral" label="Sort" title="Brand action"-->
+    <!--onclick="{! c.sorting }"/>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--<lightning:select name="select" label="Select accounting period:" aura:id="select"-->
+    <!--value="{!v.period}">-->
+    <!--<aura:iteration items="{!v.PeriodValue}" var="per">-->
+    <!--<option text="{!per.label}" value="{!per.value}"-->
+    <!--selected="{!per.selected}"/>-->
+    <!--</aura:iteration>-->
+    <!--</lightning:select>-->
+    <!--<lightning:inputField fieldName="AcctSeed__Ledger__c" value="{!v.myLedger}"/>-->
+    <!--<div class="slds-size&#45;&#45;1-of-1 slds-p-horizontal_x-smal">-->
+    <!--<lightning:dualListbox aura:id="selectOptions" name="Select Email Group" label="Select Email Group"-->
+    <!--sourceLabel="Available Groups"-->
+    <!--selectedLabel="Selected Groups"-->
+    <!--options="{!v.ListOfEmailGroup}"-->
+    <!--value="{!v.defaultOptions}"-->
+    <!--/>-->
+    <!--</div>-->
+    <!--<lightning:inputField fieldName="AcctSeed__Date__c" value="{!v.InvoiceDate}"/>-->
+
+    <!--</lightning:recordEditForm>-->
+    <!--</div>-->
+    <!--<div class="slds-modal__footer">-->
+    <!--<lightning:button variant="brand" label="Create" title="Brand action" onclick="{! c.save }"/>-->
+    <!--</div>-->
+
+</aura:component>

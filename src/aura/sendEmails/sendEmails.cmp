@@ -1,0 +1,154 @@
+<aura:component description="sendEmails"
+                implements="force:lightningQuickActionWithoutHeader,force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,clients:availableForMailAppAppPage,clients:hasItemContext,lightning:actionOverride"
+                controller="Int_SendEmailController">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="group" type="List"/>
+    <aura:attribute name="AttachmentList" type="List"/>
+    <aura:attribute name="myVal" type="String"/>
+    <aura:attribute name="Subject" type="String"/>
+    <aura:attribute name="Icon" type="String"/>
+    <aura:attribute name="AddressTO" type="String"/>
+    <aura:attribute name="AddressCC" type="String"/>
+    <aura:attribute name="AddressFrom" type="String"/>
+    <aura:attribute name="showSpinner" type="Boolean"/>
+    <aura:attribute name="showAttachment" type="Boolean"/>
+    <aura:attribute name="showBexio" type="Boolean"/>
+    <aura:attribute name="showEmail" type="Boolean"/>
+    <aura:attribute name="isSend" type="Boolean"/>
+    <aura:attribute name="isShowSendEmails" type="Boolean"/>
+    <aura:attribute name="DateStart" type="Datetime"/>
+    <aura:attribute name="DateEnd" type="Datetime"/>
+    <aura:attribute name="accountName" type="String"/>
+    <aura:attribute name="accountEmail" type="String"/>
+    <aura:attribute name="emailsCC" type="String"/>
+    <aura:attribute name="emailsTO" type="String"/>
+    <aura:attribute name="emailTemplateName" type="String"/>
+    <aura:attribute name="nameInvoice" type="String"/>
+
+    <aura:if isTrue="{!v.showSpinner}">
+        <div class="slds-spinner_container slds-show spinnerposition" aura:id="imgSpinner">
+            <div class="slds-spinner--brand slds-spinner slds-spinner--medium spinneralert" role="alert">
+                <span class="slds-assistive-text">Waiting...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    <aura:if isTrue="{!v.isShowSendEmails}">
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small"
+                 aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Send an email</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <!--                    <div class="slds-size&#45;&#45;1-of-1 slds-p-horizontal_x-small" style="display: flex; flex-wrap: wrap">-->
+<!--                    <div class="slds-size&#45;&#45;1-of-1 slds-p-horizontal_x-small">-->
+<!--                            <span><label-->
+<!--                                        class="slds-form-element__label">To: &nbsp; </label>{!v.accountEmail}</span>-->
+<!--                    </div>-->
+                    <div class="slds-size--1-of-1 slds-p-horizontal_x-small">
+                            <span><label
+                                        class="slds-form-element__label">TO GROUPS: &nbsp; </label>{!v.emailsTO}</span>
+                    </div>
+                    <!--                    <div class="slds-size&#45;&#45;1-of-1 slds-p-horizontal_x-small" style="display: flex; flex-wrap: wrap">-->
+                    <div class="slds-size--1-of-1 slds-p-horizontal_x-small">
+                            <span><label
+                                        class="slds-form-element__label">CC GROUPS: &nbsp; </label>{!v.emailsCC}</span>
+                    </div>
+                    <!--                    <div class="slds-size&#45;&#45;1-of-1 slds-p-horizontal_x-small" style="display: flex; flex-wrap: wrap">-->
+                    <div class="slds-size--1-of-1 slds-p-horizontal_x-small">
+                        <span><label class="slds-form-element__label">From: &nbsp; </label>{!v.AddressFrom}</span>
+                    </div>
+
+                    <lightning:input label="Subject" name="subject" value="{!v.Subject}"
+                                     class="slds-size--1-of-1 slds-p-horizontal_x-small"/>
+
+                    <div class="slds-size--1-of-1 slds-p-horizontal_x-small" style="margin-bottom: 20px">
+                        <label class="slds-form-element__label">Body:</label>
+                        <lightning:inputRichText value="{!v.myVal}" label="Body"/>
+                    </div>
+                    <aura:if isTrue="{!v.showAttachment}">
+                        <div class="slds-m-top_small">
+                            <aura:iteration items="{!v.AttachmentList}" var="item">
+                                <div class="slds-m-bottom_x-small">
+                                    <lightning:icon iconName="{!item.Icon}" class="slds-m-right_x-small"
+                                                    alternativeText="Image file" title="Image"/>
+                                    <ui:outputURL value="{!item.UrlFile}" label="{!item.Name}" target="_ blank"/>
+                                </div>
+                            </aura:iteration>
+                        </div>
+                    </aura:if>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button variant="success" label="Send" title="Brand action" onclick="{!c.save}"/>
+                    <lightning:button variant="brand" label="Schedule send" title="Brand action"
+                                      onclick="{!c.next}"/>
+                    <lightning:button variant="brand-outline" label="Cancel" title="Brand action"
+                                      onclick="{!c.cancel}"/>
+                </footer>
+            </div>
+        </section>
+        <!--        <div class="slds-backdrop slds-backdrop_open"></div>-->
+
+    </aura:if>
+    <aura:if isTrue="{!v.isSend}">
+
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small"
+                 aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Schedule an email to be sent</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <div class="slds-p-top_medium">
+                        <div class="row">
+                            <h1 class="header; slds-p-bottom--medium slds-text-heading_medium">Send time</h1>
+                            <lightning:input type="datetime" name="input1" label="Enter a date/time value"
+                                             value="{!v.DateStart}"/>
+                        </div>
+                    </div>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button variant="brand" label="Schedule" title="Brand action"
+                                      onclick="{!c.schedulerInvoicesCreate}"/>
+                    <lightning:button variant="brand-outline" label="Back" title="Brand action"
+                                      onclick="{!c.back}"/>
+                    <lightning:button variant="brand-outline" label="Cancel" title="Brand action"
+                                      onclick="{!c.cancel}"/>
+                </footer>
+            </div>
+        </section>
+        <!--        <div class="slds-backdrop slds-backdrop_open"></div>-->
+
+
+        <!--        <div class="slds-modal__container">-->
+        <!--            <div class="slds-modal__header">-->
+        <!--                <h2 class="slds-text-heading&#45;&#45;medium">Send an email to the {!v.Name} candidate</h2>-->
+        <!--                <h2 class="slds-text-heading&#45;&#45;medium"> immediately or schedule a sending?</h2>-->
+        <!--            </div>-->
+        <!--            <div class="slds-p-top_medium">-->
+        <!--                <div class="row">-->
+        <!--                    <h1 class="header; slds-p-bottom&#45;&#45;medium slds-text-heading_medium">Send time</h1>-->
+        <!--                    <lightning:input type="datetime" name="input1" label="Enter a date/time value"-->
+        <!--                                     value="{!v.DateStart}"/>-->
+        <!--                </div>-->
+        <!--            </div>-->
+        <!--            <div class="slds-text-heading&#45;&#45;medium" style="margin-bottom: 45%;"></div>-->
+        <!--            &lt;!&ndash;<div class="slds-p-top_medium slds-p-bottom&#45;&#45;medium slds-border_top" style="margin-bottom: 18%;">&ndash;&gt;-->
+        <!--            &lt;!&ndash;<div class="row">&ndash;&gt;-->
+        <!--            &lt;!&ndash;<h1 class="header; slds-p-bottom&#45;&#45;medium slds-text-heading_medium">Finish Time</h1>&ndash;&gt;-->
+        <!--            &lt;!&ndash;<lightning:input type="datetime" name="input1" label="Enter a date/time value"&ndash;&gt;-->
+        <!--            &lt;!&ndash;value="{!v.DateEnd}"/>&ndash;&gt;-->
+        <!--            &lt;!&ndash;</div>&ndash;&gt;-->
+        <!--            &lt;!&ndash;</div>&ndash;&gt;-->
+        <!--            <div class="slds-modal__footer">-->
+        <!--                <lightning:button variant="brand" label="Schedule" title="Brand action"-->
+        <!--                                  onclick="{! c.schedulerCreate }"/>-->
+        <!--                <lightning:button variant="brand-outline" label="Back" title="Brand action" onclick="{! c.back }"/>-->
+        <!--                <lightning:button variant="brand-outline" label="Cancel" title="Brand action"-->
+        <!--                                  onclick="{! c.cancel }"/>-->
+        <!--            </div>-->
+        <!--        </div>-->
+    </aura:if>
+</aura:component>

@@ -1,0 +1,10 @@
+/**
+ * Created by max1m on 17.07.20.
+ */
+
+.THIS {
+    width:100% !important;
+}
+.THIS .slds-modal__content{
+    overflow: initial;
+}
